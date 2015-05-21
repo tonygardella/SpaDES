@@ -422,8 +422,6 @@ setMethod("seedDispRcv",
               #potentials <- potentials[((n-cellSize) < dis) & (dis <= n),]
               potentials <- potentials[abs(dis - n)<=(n-cellSize),]
 
-              browser()
-
               # for speeding up. If no pixels within the doughnut are a seed source,
               #  just skip next block
               potentialsWithSeed <- as.logical(seedSrcVec[potentials[,to]])
