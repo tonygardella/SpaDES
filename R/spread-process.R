@@ -350,6 +350,8 @@ setMethod("seedDispRcv",
                                 effDist, maxDist, b, k,
                                 plot.it=FALSE, ...) {
             cellSize=unique(res(seedSrc))
+
+            seedSrcVec <- getValues(seedSrc)
             seedRcv <- Which(seedRcv>0, cells=TRUE)
             if(length(cellSize)>1) stop("seedSrc resolution must be same in x and y dimension")
             ### should sanity check map extents
@@ -404,7 +406,7 @@ setMethod("seedDispRcv",
               # 2. Can't have more than one "arrival" in a potential "to" cell, by cluster
               # Don't know how to do next within data.table syntax - remove duplicate "to"
               #  within a cluster
-              unique(., by=c("fromInit", "to"))
+                unique(., by=c("fromInit", "to"))
               #potentials  <- potentials %>%
               #  group_by(fromInit) %>%
               #  filter(!duplicated(to))
@@ -414,13 +416,17 @@ setMethod("seedDispRcv",
               #   in a circle. It is somewhat wasteful, because the distances are calculated above
               #   and then deleted here, but this may be the most efficient way
               nr <- NROW(potentials)
+
               xys <- xyFromCell(seedSrc, as.matrix(potentials[,list(fromInit,to)]))
               potentials[,dis:=pointDistance(xys[1:nr,], xys[(nr+1):(2*nr),], lonlat=FALSE)]
-              potentials <- potentials[((n-cellSize) < dis) & (dis <= n),]
+              #potentials <- potentials[((n-cellSize) < dis) & (dis <= n),]
+              potentials <- potentials[abs(dis - n)<=(n-cellSize),]
+
+              browser()
 
               # for speeding up. If no pixels within the doughnut are a seed source,
               #  just skip next block
-              potentialsWithSeed <- as.logical(seedSrc[potentials[,to]])
+              potentialsWithSeed <- as.logical(seedSrcVec[potentials[,to]])
               if(any(potentialsWithSeed)) {
 
                 potentialsWithSeedDT  <- potentials[potentialsWithSeed,]
