@@ -147,8 +147,6 @@ setMethod("seedDispRcv",
                 filter(!duplicated(to)) %>%
                 data.table
 
-              print(paste0("dist = ",n, ", maxDist = ",maxDist))
-
               # 3. remove any that are not within a 1 unit doughnut of
               # discard those that more than "n" units from a "from" cell. This keeps spreading
               #   in a circle. It is somewhat wasteful, because the distances are calculated above
