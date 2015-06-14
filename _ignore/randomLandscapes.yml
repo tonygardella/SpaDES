@@ -1,0 +1,127 @@
+name: randomLandscapes
+description: Generate RasterStack of random maps representative of a forest landscape
+  (DEM, forestAge, forestCover, habitatQuality, percentPine). Requires a global simulation
+  parameter `stackName` be set.
+keywords:
+- random map
+- random landscape
+authors:
+- given:
+  - Alex
+  - M
+  family: Chubaty
+  role:
+  - aut
+  - cre
+  email: Alexander.Chubaty@NRCan.gc.ca
+  comment: ~
+- given:
+  - Eliot
+  - J
+  - B
+  family: McIntire
+  role:
+  - aut
+  - cre
+  email: Eliot.McIntire@NRCan.gc.ca
+  comment: ~
+version:
+- - 1
+  - 0
+  - 0
+spatialExtent: .na
+timeframe:
+  sec:
+  - .na.real
+  - .na.real
+  min:
+  - .na.integer
+  - .na.integer
+  hour:
+  - .na.integer
+  - .na.integer
+  mday:
+  - .na.integer
+  - .na.integer
+  mon:
+  - .na.integer
+  - .na.integer
+  year:
+  - .na.integer
+  - .na.integer
+  wday:
+  - .na.integer
+  - .na.integer
+  yday:
+  - .na.integer
+  - .na.integer
+  isdst:
+  - -1
+  - -1
+  zone:
+  - ''
+  - ''
+  gmtoff:
+  - .na.integer
+  - .na.integer
+timestepUnit: .na.real
+citation: []
+reqdPkgs:
+- raster
+- RColorBrewer
+- tkrplot
+- RandomFields
+parameters:
+  name:
+  - stackName
+  - nx
+  - ny
+  - inRAM
+  - .plotInitialTime
+  - .plotInterval
+  - .saveInitialTime
+  - .saveInterval
+  class:
+  - character
+  - numeric
+  - numeric
+  - logical
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+  default:
+  - randomLandscape
+  - 100
+  - 100
+  - no
+  - 0.0e+00
+  - 1.0
+  - .na.real
+  - .na.real
+  min:
+  - .na.character
+  - .na.real
+  - .na.real
+  - .na
+  - .na.real
+  - .na.real
+  - .na.real
+  - .na.real
+  max:
+  - .na.character
+  - .na.real
+  - .na.real
+  - .na
+  - .na.real
+  - .na.real
+  - .na.real
+  - .na.real
+inputObjects:
+  objectName: []
+  objectClass: []
+  other: []
+outputObjects:
+  objectName: landscape
+  objectClass: RasterStack
+  other: .na.character
