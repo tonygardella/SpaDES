@@ -467,6 +467,9 @@ setReplaceMethod("objs",
 #'
 #' @param value The object to be stored at the slot.
 #'
+#' @details \code{params} will work on \code{simList} or metadata
+#' list, resulting from a \code{moduleMetadata} call.
+#'
 #' @return Returns or sets the value of the slot from the \code{simList} object.
 #'
 #' @seealso \code{\link{simList-class}},
@@ -478,7 +481,13 @@ setReplaceMethod("objs",
 #' @docType methods
 #' @aliases simList-accessors-params
 #' @rdname simList-accessors-params
-#'
+#' @examples
+#' # extract parameters from either a simList or metadatalist
+#'  library(igraph)
+#'  path <- system.file(package="SpaDES", "sampleModules")
+#'  listModules(path=path) %>%
+#'    moduleMetadata(., path=path) %>%
+#'    params
 setGeneric("params", function(object) {
   standardGeneric("params")
 })
@@ -490,6 +499,18 @@ setMethod("params",
           definition=function(object) {
             return(object@params)
 })
+
+#' @export
+#' @rdname simList-accessors-params
+setMethod(
+  "params",
+  signature = c(object="list"),
+  definition = function(object) {
+    keywords <- lapply(object, function(y) y$parameters)
+    names(keywords) <- sapply(object, function(y) y$name)
+    return(keywords)
+  })
+
 
 #' @export
 #' @rdname simList-accessors-params
@@ -1835,6 +1856,17 @@ setMethod(
     })
     return(timestepUnits)
 })
+
+#' @export
+#' @rdname simList-accessors-times
+setMethod(
+  "timeunits",
+  signature = c(x="list"),
+  definition = function(x) {
+    timeunits <- lapply(x, function(y) y$timeunit)
+    names(timeunits) <- sapply(x, function(y) y$name)
+    return(timeunits)
+  })
 
 ################################################################################
 #' Add simulation dependencies

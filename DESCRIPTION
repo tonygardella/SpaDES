@@ -61,9 +61,6 @@ Imports:
     stringi,
     stringr
 License: GPL-3
-VignetteBuilder: knitr
-BugReports: https://github.com/PredictiveEcology/SpaDES/issues
-ByteCompile: yes
 Collate:
     'agent.R'
     'SELES.R'

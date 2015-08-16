@@ -19,6 +19,7 @@
 \alias{outputPath<-}
 \alias{outputPath<-,simList-method}
 \alias{params}
+\alias{params,list-method}
 \alias{params,simList-method}
 \alias{params<-}
 \alias{params<-,simList-method}
@@ -36,6 +37,8 @@
 params(object)
 
 \S4method{params}{simList}(object)
+
+\S4method{params}{list}(object)
 
 params(object) <- value
 
@@ -123,6 +126,17 @@ Advanced use
 }
 \details{
 Currently, only get and set methods are defined. Subset methods are not.
+
+\code{params} will work on \code{simList} or metadata
+list, resulting from a \code{moduleMetadata} call.
+}
+\examples{
+# extract parameters from either a simList or metadatalist
+ library(igraph)
+ path <- system.file(package="SpaDES", "sampleModules")
+ listModules(path=path) \%>\%
+   moduleMetadata(., path=path) \%>\%
+   params
 }
 \seealso{
 \code{\link{simList-class}},

@@ -30,6 +30,7 @@
 \alias{timeunit<-}
 \alias{timeunit<-,simList-method}
 \alias{timeunits}
+\alias{timeunits,list-method}
 \alias{timeunits,simList-method}
 \title{Get and set simulation times.}
 \usage{
@@ -88,6 +89,8 @@ timeunit(x) <- value
 timeunits(x)
 
 \S4method{timeunits}{simList}(x)
+
+\S4method{timeunits}{list}(x)
 }
 \arguments{
 \item{x}{A \code{simList} simulation object.}
