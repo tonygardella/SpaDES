@@ -71,7 +71,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h1 class="title toc-ignore">01 Introduction to <code>SpaDES</code></h1>
 <h4 class="author"><em>Alex M. Chubaty</em></h4>
 <h4 class="author"><em>Eliot J. B. McIntire</em></h4>
-<h4 class="date"><em>November 23 2016</em></h4>
+<h4 class="date"><em>November 24 2016</em></h4>
 
 
 <div id="TOC">
@@ -221,7 +221,7 @@ mySim
 </div>
 <div id="running-a-simulation-the-spades-function" class="section level2">
 <h2><span class="header-section-number">3.2</span> Running a simulation: the <code>spades</code> function</h2>
-<p>Once a simulation is properly initialized it is executed using the <code>spades</code> function. By default in an interactive session, a progress bar is displayed in the console (this can be customized), and any specified files are loaded (via including an <code>input</code> <code>data.frame</code> or <code>data.table</code>, see examples). Debugging mode, <em>i.e.</em>, setting <code>spades(mySim, debug=TRUE)</code>, prints the contents of the <code>simList</code> object after the completion of every event during simulation.</p>
+<p>Once a simulation is properly initialized it is executed using the <code>spades</code> function. By default in an interactive session, a progress bar is displayed in the console (this can be customized), and any specified files are loaded (via including an <code>input</code> <code>data.frame</code> or <code>data.table</code>, see examples). Debugging mode, <em>i.e.</em>, setting <code>spades(mySim, debug = TRUE)</code>, prints the contents of the <code>simList</code> object after the completion of every event during simulation. See the <a href="https://github.com/PredictiveEcology/SpaDES/wiki/Debugging">wiki entry on debugging</a> for more details on debugging SpaDES models.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">options</span>(<span class="dt">spades.nCompleted =</span> <span class="dv">50</span>)   <span class="co"># default: store 1000 events in the completed event list</span>
 mySim &lt;-<span class="st"> </span><span class="kw">simInit</span>(...)             <span class="co"># initialize a simulation using valid parameters</span>
 mySim &lt;-<span class="st"> </span><span class="kw">spades</span>(mySim)            <span class="co"># run the simulation, returning the completed sim object</span>
@@ -307,7 +307,7 @@ sims &lt;-<span class="st"> </span><span class="kw">experiment</span>(mySim, <sp
 </div>
 <div id="wiki" class="section level3">
 <h3><span class="header-section-number">6.1.4</span> Wiki</h3>
-<p>Additional guides for getting started with <code>SpaDES</code> are provided at our wiki:</p>
+<p>Additional guides for getting started with <code>SpaDES</code> and debugging are provided at our wiki:</p>
 <p><a href="https://github.com/PredictiveEcology/SpaDES/wiki" class="uri">https://github.com/PredictiveEcology/SpaDES/wiki</a></p>
 </div>
 <div id="qa-forum" class="section level3">
