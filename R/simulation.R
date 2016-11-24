@@ -3,243 +3,6 @@ if (getRversion() >= "3.1.0") {
 }
 
 ################################################################################
-#' Determine which modules in a list are unparsed
-#'
-#' Internal function, used during \code{\link{simInit}}.
-#'
-#' @param modules A character vector specifying the modules to parse.
-#'
-#' @return The ids of the unparsed list elements.
-#'
-#' @docType methods
-#' @keywords internal
-#' @rdname unparsed
-#'
-#' @author Alex Chubaty
-#'
-setGeneric(".unparsed",
-           function(modules) {
-             standardGeneric(".unparsed")
-})
-
-#' @rdname unparsed
-setMethod(
-  ".unparsed",
-  signature(modules = "list"),
-  definition = function(modules) {
-    ids <- lapply(modules, function(x) {
-      (attr(x, "parsed") == FALSE)
-    }) %>% `==`(., TRUE) %>% which()
-    return(ids)
-})
-
-################################################################################
-#' @return \code{.parseModulePartial} extracts just the individual element
-#' requested from the module. This can be useful if parsing the whole module
-#' would cause an error.
-#'
-#' @include module-dependencies-class.R
-#' @include simList-class.R
-#' @include environment.R
-#' @export
-#' @param filename The filename of the module to be parsed.
-#' @inheritParams spades
-#' @param defineModuleElement Character string indicating which of the list
-#'                            elements in defineModule should be extracted
-#' @docType methods
-#' @rdname parseModule
-#'
-#' @author Eliot McIntire
-#'
-setGeneric(".parseModulePartial",
-           function(sim, modules, filename, defineModuleElement) {
-             standardGeneric(".parseModulePartial")
-})
-
-#' @rdname parseModule
-setMethod(
-  ".parseModulePartial",
-  signature(
-    sim = "missing",
-    modules = "missing",
-    filename = "character",
-    defineModuleElement = "character"
-  ),
-  definition = function(filename, defineModuleElement) {
-    parsedFile <- parse(filename)
-    defineModuleItem <-
-      grepl(pattern = "defineModule", parsedFile)
-    pf <- parsedFile[defineModuleItem]
-
-    namesParsedList <-
-      names(parsedFile[defineModuleItem][[1]][[3]])
-
-    element <- (namesParsedList == defineModuleElement)
-    out <- pf[[1]][[3]][element][[1]]
-    out <- tryCatch(
-      eval(out),
-      error = function(x)
-        out
-    )
-    return(out)
-})
-
-#' @rdname parseModule
-setMethod(
-  ".parseModulePartial",
-  signature(
-    sim = "simList",
-    modules = "list",
-    filename = "missing",
-    defineModuleElement = "character"
-  ),
-  definition = function(sim, modules, defineModuleElement) {
-    out <- list()
-    for (j in seq_along(modules)) {
-      m <- modules[[j]][1]
-      filename <-
-        paste(sim@paths[['modulePath']], "/", m, "/", m, ".R", sep = "")
-      out[[m]] <- .parseModulePartial(filename = filename,
-                                      defineModuleElement = defineModuleElement)
-    }
-    return(out)
-})
-
-################################################################################
-#' Parse and initialize a module
-#'
-#' Internal function, used during \code{\link{simInit}}.
-#'
-#' @param sim     A \code{simList} simulation object.
-#'
-#' @param modules A list of modules with a logical attribute "parsed".
-#'
-#' @param userSuppliedObjNames Character string (or \code{NULL}, the default)
-#'                             indicating the names of objects that user has passed
-#'                             into simInit via objects or inputs.
-#'                             If all module inputObject dependencies are provided by user,
-#'                             then the \code{.inputObjects} code will be skipped.
-#'
-#' @return A \code{simList} simulation object.
-#'
-#' @include module-dependencies-class.R
-#' @include simList-class.R
-#' @include environment.R
-#' @docType methods
-#' @keywords internal
-#' @rdname parseModule
-#'
-#' @author Alex Chubaty
-#'
-setGeneric(".parseModule",
-           function(sim, modules, userSuppliedObjNames = NULL) {
-             standardGeneric(".parseModule")
-           })
-
-#' @rdname parseModule
-setMethod(
-  ".parseModule",
-  signature(sim = "simList", modules = "list"),
-  definition = function(sim, modules, userSuppliedObjNames) {
-    all_children <- list()
-    children <- list()
-    parent_ids <- integer()
-    for (j in .unparsed(modules)) {
-      m <- modules[[j]][1]
-      filename <-
-        paste(sim@paths[['modulePath']], "/", m, "/", m, ".R", sep = "")
-      parsedFile <- parse(filename)
-      defineModuleItem <-
-        grepl(pattern = "defineModule", parsedFile)
-
-      # evaluate the rest of the parsed file
-      eval(parsedFile[!defineModuleItem], envir = sim@.envir)
-
-      # parse any scripts in R subfolder
-      RSubFolder <- file.path(dirname(filename), "R")
-      RScript <- dir(RSubFolder)
-      if (length(RScript) > 0) {
-        for (Rfiles in RScript) {
-          parsedFile1 <- parse(file.path(RSubFolder, Rfiles))
-          eval(parsedFile1, envir = sim@.envir)
-        }
-      }
-
-      # evaluate all but inputObjects and outputObjects part of 'defineModule'
-      #  This allow user to use params(sim) in their inputObjects
-      namesParsedList <-
-        names(parsedFile[defineModuleItem][[1]][[3]])
-      inObjs <- (namesParsedList == "inputObjects")
-      outObjs <- (namesParsedList == "outputObjects")
-      pf <- parsedFile[defineModuleItem]
-      pf[[1]][[3]] <- pf[[1]][[3]][!(inObjs | outObjs)]
-      sim <- suppressWarnings(eval(pf))
-
-      # check that modulename == filename
-      fname <- unlist(strsplit(basename(filename), "[.][r|R]$"))
-      for (k in length(sim@depends@dependencies)) {
-        if (sim@depends@dependencies[[k]]@name == m)
-          i <- k
-      }
-
-      # assign default param values
-      deps <- sim@depends@dependencies[[i]]@parameters
-      sim@params[[m]] <- list()
-      if (NROW(deps) > 0) {
-        for (x in 1:NROW(deps)) {
-          sim@params[[m]][[deps$paramName[x]]] <- deps$default[[x]]
-        }
-      }
-
-      # do inputObjects and outputObjects
-      pf <- parsedFile[defineModuleItem]
-      if (any(inObjs)) {
-        sim@depends@dependencies[[i]]@inputObjects <-
-          eval(pf[[1]][[3]][inObjs][[1]])
-        sim@depends@dependencies[[i]]@outputObjects <-
-          eval(pf[[1]][[3]][outObjs][[1]])
-      }
-
-      # update parse status of the module
-      attributes(modules[[j]]) <- list(parsed = TRUE)
-
-      # add child modules to list of all child modules, to be parsed later
-      children <-
-        as.list(sim@depends@dependencies[[i]]@childModules) %>%
-        lapply(., `attributes<-`, list(parsed = FALSE))
-      all_children <- append_attr(all_children, children)
-
-      # remove parent module from the list
-      if (length(children)) {
-        parent_ids <- c(parent_ids, j)
-      }
-
-      ## run .inputObjects() from each module file from each module, one at a time,
-      ## and remove it from the simList so next module won't rerun it.
-
-      # If user supplies the needed objects, then test whether all are supplied.
-      # If they are all supplied, then skip the .inputObjects code
-      if (!all(sim@depends@dependencies[[i]]@inputObjects$objectName %in% userSuppliedObjNames)) {
-        if (!is.null(sim@.envir$.inputObjects)) {
-          sim <- sim@.envir$.inputObjects(sim)
-          rm(".inputObjects", envir = sim@.envir)
-        }
-      }
-    }
-
-    names(sim@depends@dependencies) <- unlist(modules)
-
-    modules(sim) <- if (length(parent_ids)) {
-      append_attr(modules, all_children)[-parent_ids]
-    } else {
-      append_attr(modules, all_children)
-    } %>%
-      unique()
-
-    return(sim)
-})
-
-################################################################################
 #' Initialize a new simulation
 #'
 #' Create a new simulation object, the "sim" object. This object is implemented
@@ -346,6 +109,7 @@ setMethod(
 #' @include simList-class.R
 #' @include environment.R
 #' @include priority.R
+#' @include simulation-parseModule.R
 #' @export
 #' @docType methods
 #' @rdname simInit
@@ -487,18 +251,15 @@ setMethod(
 
     ## timeunit is needed before all parsing of modules.
     ## It could be used within modules within defineParameter statements.
-    timeunits <-
-      .parseModulePartial(sim, modules(sim), defineModuleElement = "timeunit")
+    timeunits <- .parseModulePartial(sim, modules(sim), defineModuleElement = "timeunit")
 
     allTimeUnits <- FALSE
 
     findSmallestTU <- function(sim, mods) {
-      out <-
-        lapply(.parseModulePartial(sim, mods, defineModuleElement = "childModules"),
-               as.list)
+      out <- .parseModulePartial(sim, mods, defineModuleElement = "childModules") %>%
+        lapply(as.list)
       isParent <- lapply(out, length) > 0
-      tu <-
-        .parseModulePartial(sim, mods, defineModuleElement = "timeunit")
+      tu <- .parseModulePartial(sim, mods, defineModuleElement = "timeunit")
       hasTU <- !is.na(tu)
       out[hasTU] <- tu[hasTU]
       if (!all(hasTU)) {
@@ -513,58 +274,50 @@ setMethod(
       minTimeunit(as.list(unlist(out)))
     }
 
-    # recursive function to extract parent and child structures
+    ## recursive function to extract parent and child structures
     buildModuleGraph <- function(sim, mods) {
-      out <-
-        lapply(.parseModulePartial(sim, mods, defineModuleElement = "childModules"),
-               as.list)
+      out <- .parseModulePartial(sim, mods, defineModuleElement = "childModules") %>%
+        lapply(as.list)
       isParent <- lapply(out, length) > 0
-      to <-
-        unlist(lapply(out, function(x)
-          if (length(x) == 0)
-            names(x)
-          else
-            x))
+      to <- lapply(out, function(x) {
+        if (length(x) == 0) names(x) else x
+      }) %>% unlist()
       if (is.null(to))
         to <- character(0)
       from <- rep(names(out), unlist(lapply(out, length)))
-      outDF <- data.frame(from = from,
-                          to = to,
-                          stringsAsFactors = FALSE)
+      outDF <- data.frame(from = from, to = to, stringsAsFactors = FALSE)
       while (any(isParent)) {
         for (i in which(isParent)) {
-          outDF <-
-            rbind(outDF, buildModuleGraph(sim, as.list(unlist(out[i]))))
+          outDF <- unlist(out[i]) %>%
+            as.list() %>%
+            buildModuleGraph(sim, .) %>%
+            rbind(outDF, .)
           isParent[i] <- FALSE
         }
       }
       outDF
     }
 
-    # run this only once, at the highest level of the hierarchy, so before the parse tree happens
+    ## run this only once, at the highest level of the hierarchy, so before the parse tree happens
     moduleGraph <- buildModuleGraph(sim, modules(sim))
 
     timeunits <- findSmallestTU(sim, modules(sim))
 
-    if (length(timeunits) == 0)
-      timeunits <- list("second") # no modules at all
+    if (length(timeunits) == 0) timeunits <- list("second") # no modules at all
 
     if (!is.null(times$unit)) {
       message(
         paste0(
           "times contains \'unit\', rather than \'timeunit\'. ",
-          "Using \"",
-          times$unit,
-          "\" as timeunit"
+          "Using \"", times$unit, "\" as timeunit."
         )
       )
       times$timeunit <- times$unit
       times$unit <- NULL
     }
 
-    # Get correct time unit now that modules are loaded
+    ## Get correct time unit now that modules are loaded
     timeunit(sim) <- if (!is.null(times$timeunit)) {
-      #sim@simtimes[["timeunit"]] <- if (!is.null(times$timeunit)) {
       times$timeunit
     } else {
       minTimeunit(timeunits)
@@ -578,29 +331,29 @@ setMethod(
       timeunit = sim@simtimes[["timeunit"]]
     )
 
-    # START OF simInit overrides for inputs, then objects
+    ## START OF simInit overrides for inputs, then objects
     if (NROW(inputs)) {
       inputs <- .fillInputRows(inputs, startTime = start(sim))
     }
 
-    # used to prevent .inputObjects from loading if object is passed in by user.
+    ## used to prevent .inputObjects from loading if object is passed in by user.
     sim$.userSuppliedObjNames <- c(objNames, inputs$objectName)
 
-    # for now, assign only some core & global params
+    ## for now, assign only some core & global params
     sim@params$.globals <- params$.globals
 
-    # add core module name to the loaded list (loaded with the package)
+    ## add core module name to the loaded list (loaded with the package)
     modulesLoaded <- append(modulesLoaded, core)
 
-    # source module metadata and code files, checking version info
-    lapply(modules(sim), function(m) {
-      .parseModulePartial(
-        sim = sim,
-        modules = list(m),
-        defineModuleElement = "version"
-      )[[m]] #%>%
-      #  versionWarning(m, .)
-    })
+    ## source module metadata and code files, checking version info
+    # lapply(modules(sim), function(m) {
+    #   .parseModulePartial(
+    #     sim = sim,
+    #     modules = list(m),
+    #     defineModuleElement = "version"
+    #   )[[m]] %>%
+    #   versionWarning(m, .)
+    # })
 
     ## do multi-pass if there are parent modules; first for parents, then for children
     all_parsed <- FALSE
@@ -631,8 +384,7 @@ setMethod(
     # assign user-specified non-global params, while
     # keeping defaults for params not specified by user
     omit <- c(which(core == "load"), which(core == "save"))
-    pnames <-
-      unique(c(paste0(".", core[-omit]), names(sim@params)))
+    pnames <- unique(c(paste0(".", core[-omit]), names(sim@params)))
 
     if ((is.null(params$.progress)) ||
         (any(is.na(params$.progress)))) {
@@ -649,7 +401,8 @@ setMethod(
     if (!all(length(loadOrder),
              all(sim@modules %in% loadOrder),
              all(loadOrder %in% sim@modules))) {
-      loadOrder <- depsGraph(sim, plot = FALSE) %>% .depsLoadOrder(sim, .)
+      loadOrder <- depsGraph(sim, plot = FALSE) %>%
+        .depsLoadOrder(sim, .)
     }
 
     # load user-defined modules
@@ -954,17 +707,12 @@ setMethod(
   "doEvent",
   signature(sim = "simList"),
   definition = function(sim, debug, notOlderThan) {
-    if (class(sim) != "simList") {
-      # use inherits()?
-      stop("doEvent can only accept a simList object")
-    }
-
     # core modules
     core <- list("checkpoint", "save", "progress", "load")
 
-    cur <- sim@current #current(sim, "second")
+    cur <- sim@current
     if (NROW(cur) == 0 || any(is.na(cur))) {
-      evnts <- sim@events #events(sim, "second")
+      evnts <- sim@events
       # get next event from the queue and remove it from the queue
       if (NROW(evnts)) {
         sim@current <- evnts[1L, ]
@@ -977,7 +725,7 @@ setMethod(
 
     # catches the situation where no future event is scheduled,
     #  but stop time is not reached
-    cur <- sim@current #current(sim, "second")
+    cur <- sim@current
     if (any(is.na(cur))) {
       sim@simtimes[["current"]] <- sim@simtimes[["end"]] + 1
     } else {
@@ -993,7 +741,6 @@ setMethod(
 
         # check the module call for validity
         if (!(all(sapply(debug, identical, FALSE)))) {
-          #if (length(debug) > 1) print("---------------------------")
           for (i in seq_along(debug)) {
             if (isTRUE(debug[[i]]) | debug[[i]] == "current") {
               if (NROW(cur) > 0) {
@@ -1001,27 +748,20 @@ setMethod(
                 widths <- str_length(format(evnts1))
                 sim$.spadesDebugWidth <-
                   pmax(widths, sim$.spadesDebugWidth)
-                evnts1[1L, ] <-
-                  str_pad(format(evnts1), side = "right", sim$.spadesDebugWidth)
+                evnts1[1L, ] <- format(evnts1) %>%
+                  str_pad(., side = "right", sim$.spadesDebugWidth)
 
                 if (sim$.spadesDebugFirst) {
                   evnts2 <- evnts1
-                  evnts2[1L:2L, ] <- rbind(
-                    str_pad(names(evnts1), sim$.spadesDebugWidth),
-                    evnts1)
+                  evnts2[1L:2L, ] <- names(evnts1) %>%
+                    str_pad(., sim$.spadesDebugWidth) %>%
+                    rbind(., evnts1)
                   cat("This is the current event, printed as it is happening:\n")
-                  write.table(
-                    evnts2,
-                    quote = FALSE,
-                    row.names = FALSE,
-                    col.names = FALSE
-                  )
+                  write.table(evnts2, quote = FALSE, row.names = FALSE, col.names = FALSE)
                   sim$.spadesDebugFirst <- FALSE
                 } else {
                   colnames(evnts1) <- NULL
-                  write.table(evnts1,
-                              quote = FALSE,
-                              row.names = FALSE)
+                  write.table(evnts1, quote = FALSE, row.names = FALSE)
                 }
               }
             } else if (debug[[i]] == "simList") {
@@ -1030,16 +770,15 @@ setMethod(
               print(eval(parse(text = debug[[i]])))
             } else if (any(debug[[i]] == unlist(sim@modules))) {
               if (debug[[i]] == cur[["moduleName"]]) {
-                #debugDoEvent <- TRUE
-                debugonce(get(paste0("doEvent.",cur[["moduleName"]]), envir = sim@.envir))
-                on.exit(get(paste0("doEvent.",cur[["moduleName"]]), envir = sim@.envir))
+                debugonce(get(paste0("doEvent.", cur[["moduleName"]]), envir = sim@.envir))
+                on.exit(get(paste0("doEvent.", cur[["moduleName"]]), envir = sim@.envir))
               }
             } else if (!any(debug[[i]] == c("step", "browser"))) {
               print(do.call(debug[[i]], list(sim)))
             }
 
             if (debug[[i]] == "step") {
-              readline("Press any key to continue")
+              readline("Press any key to continue...")
             }
           }
         }
@@ -1064,7 +803,6 @@ setMethod(
                }
              }
 
-
              # if (!is.null(sim@params[[cur[["moduleName"]]]]$.useCache)) {
              #   if (!identical(FALSE, sim@params[[cur[["moduleName"]]]]$.useCache)) {
              #     if (!isTRUE(sim@params[[cur[["moduleName"]]]]$.useCache)) {
@@ -1075,18 +813,18 @@ setMethod(
              #   }
              # }
              if (cacheIt) {
-                 moduleSpecificObjects <- c(grep(ls(sim), pattern = cur[["moduleName"]], value = TRUE),
-                                            na.omit(sim@depends@dependencies[[cur[["moduleName"]]]]@inputObjects$objectName))
-                 moduleSpecificOutputObjects <-
-                   sim@depends@dependencies[[cur[["moduleName"]]]]@outputObjects$objectName
-                 sim <- Cache(FUN = get(moduleCall, envir = sim@.envir),
-                              sim = sim,
-                              eventTime = cur[["eventTime"]], eventType = cur[["eventType"]],
-                              debug = debugDoEvent,
-                              objects = moduleSpecificObjects,
-                              notOlderThan = notOlderThan,
-                              outputObjects = moduleSpecificOutputObjects,
-                              cacheRepo = sim@paths[["cachePath"]])
+               moduleSpecificObjects <- c(grep(ls(sim), pattern = cur[["moduleName"]], value = TRUE),
+                                          na.omit(sim@depends@dependencies[[cur[["moduleName"]]]]@inputObjects$objectName))
+               moduleSpecificOutputObjects <-
+                 sim@depends@dependencies[[cur[["moduleName"]]]]@outputObjects$objectName
+               sim <- Cache(FUN = get(moduleCall, envir = sim@.envir),
+                            sim = sim,
+                            eventTime = cur[["eventTime"]], eventType = cur[["eventType"]],
+                            debug = debugDoEvent,
+                            objects = moduleSpecificObjects,
+                            notOlderThan = notOlderThan,
+                            outputObjects = moduleSpecificOutputObjects,
+                            cacheRepo = sim@paths[["cachePath"]])
              } else {
                sim <- get(moduleCall,
                          envir = sim@.envir)(sim, cur[["eventTime"]],
@@ -1159,6 +897,7 @@ setMethod(
 #'
 #' @param eventPriority  A numeric specifying the priority of the event.
 #'                       Lower number means higher priority.
+#'                       See \code{\link{priority}}.
 #'
 #' @return Returns the modified \code{simList} object.
 #'
@@ -1167,6 +906,7 @@ setMethod(
 #' @export
 #' @docType methods
 #' @rdname scheduleEvent
+#' @seealso \code{\link{priority}}
 #'
 #' @author Alex Chubaty
 #'
@@ -1298,9 +1038,9 @@ setMethod(
                         eventPriority) {
     warning(
       paste(
-        "Invalid or missing eventTime. This is usually",
-        "caused by an attempt to scheduleEvent at time NULL",
-        "or by using an undefined parameter."
+        "Invalid or missing eventTime.",
+        " This is usually caused by an attempt to scheduleEvent at time NULL",
+        " or by using an undefined parameter."
       )
     )
     return(invisible(sim))

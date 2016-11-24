@@ -31,7 +31,8 @@ call the event.}
 within the module.}
 
 \item{eventPriority}{A numeric specifying the priority of the event.
-Lower number means higher priority.}
+Lower number means higher priority.
+See \code{\link{priority}}.}
 }
 \value{
 Returns the modified \code{simList} object.
@@ -62,5 +63,8 @@ Alex Chubaty
 }
 \references{
 Matloff, N. (2011). The Art of R Programming (ch. 7.8.3). San Fransisco, CA: No Starch Press, Inc.. Retrieved from \url{https://www.nostarch.com/artofr.htm}
+}
+\seealso{
+\code{\link{priority}}
 }
 

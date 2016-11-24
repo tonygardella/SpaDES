@@ -1,4 +1,4 @@
-usesSpaDESVersion <- "1.1.0"
+usesSpaDESVersion <- "1.3.1.9015"
 if (packageVersion("SpaDES") < usesSpaDESVersion) {
   stop("This fireSpread module was built with SpaDES version", usesSpaDESVersion,
        "Please update SpaDES to use this module")
@@ -10,15 +10,11 @@ defineModule(sim, list(
   description = "Simulate fire ignition and spread on a landscape, where spread probability varies according to percent pine. Fire size statistics are collected immediately after each burn event. Requires a global simulation parameter `stackName` be set.",
   keywords = c("fire", "percolation model", "spread algorithm"),
   childModules = character(),
-  authors = c(person(c("Alex", "M"), "Chubaty",
-                     email = "alexander.chubaty@canada.ca",
-                     role = c("aut", "cre")),
-            person(c("Eliot", "J", "B"), "McIntire",
-                   email = "eliot.mcintire@canada.ca",
-                   role = c("aut", "cre")),
-            person("Steve", "Cumming",
-                   email = "Steve.Cumming@sbf.ulaval.ca",
-                   role = c("aut"))),
+  authors = c(
+    person(c("Alex", "M"), "Chubaty", email = "alexander.chubaty@canada.ca", role = c("aut", "cre")),
+    person(c("Eliot", "J", "B"), "McIntire", email = "eliot.mcintire@canada.ca", role = c("aut", "cre")),
+    person("Steve", "Cumming", email = "Steve.Cumming@sbf.ulaval.ca", role = c("aut"))
+  ),
   version = numeric_version("1.1.0"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
@@ -32,8 +28,8 @@ defineModule(sim, list(
     defineParameter("persistprob", "numeric", 0.00, 0, 1, "probability of fire persisting in a pixel"),
     defineParameter("returnInterval", "numeric", 1.0, 1.0, 1.0, "fire return interval"),
     defineParameter("spreadprob", "numeric", 0.225, 0.05, 0.5, "probability of fire spreading into a pixel"),
-    defineParameter("startTime", "numeric", start(sim)+1, 0, end(sim), "time of initial fire ignition"),
-    defineParameter(".plotInitialTime", "numeric", start(sim), start(sim), end(sim)+1, "time to schedule first plot event"),
+    defineParameter("startTime", "numeric", start(sim) + 1, 0, end(sim), "time of initial fire ignition"),
+    defineParameter(".plotInitialTime", "numeric", start(sim), start(sim), end(sim) + 1, "time to schedule first plot event"),
     defineParameter(".plotInterval", "numeric", 1, 1, 1, "time interval between plot events"),
     defineParameter(".saveInitialTime", "numeric", NA_real_, NA, NA, "time to schedule first save event"),
     defineParameter(".saveInterval", "numeric", NA_real_, NA, NA, "time interval between save events")
@@ -58,7 +54,6 @@ doEvent.fireSpread <- function(sim, eventTime, eventType, debug = FALSE) {
     ### check for more object dependencies:
     ### (use `checkObject` or similar)
     checkObject(sim, globals(sim)$stackName, layer = "habitatQuality")
-    #    checkObject(sim, globals(sim)$burnStats)
 
     if (is.null(sim[[globals(sim)$burnStats]])) {
       sim[[globals(sim)$burnStats]] <- numeric()
@@ -94,18 +89,18 @@ doEvent.fireSpread <- function(sim, eventTime, eventType, debug = FALSE) {
     ## stats scheduling done by burn event
   } else if (eventType == "plot.init") {
     # do stuff for this event
-    setColors(sim[[globals(sim)$stackName]], n = c(Fires=10)) <-
-      list(
-        DEM = grDevices::terrain.colors(10),
-        forestAge = brewer.pal(9,"BuGn"),
-        habitatQuality = brewer.pal(8,"Spectral"),
-        percentPine = brewer.pal(9,"Greens"),
-        Fires = c("white", rev(heat.colors(9)))
-      )
+    setColors(sim[[globals(sim)$stackName]], n = c(Fires = 10)) <- list(
+      DEM = grDevices::terrain.colors(10),
+      forestAge = brewer.pal(9,"BuGn"),
+      habitatQuality = brewer.pal(8,"Spectral"),
+      percentPine = brewer.pal(9,"Greens"),
+      Fires = c("white", rev(heat.colors(9)))
+    )
 
     clearPlot()
     Plot(sim[[globals(sim)$stackName]],
-         legendRange = list(0:maxValue(sim[[globals(sim)$stackName]]$DEM), 0:100, c(0,1), 0:100, 0:10))
+         legendRange = list(0:maxValue(sim[[globals(sim)$stackName]]$DEM), 0:100,
+                            c(0,1), 0:100, 0:10))
 
     # schedule the next event
     sim <- scheduleEvent(sim, time(sim) + P(sim)$.plotInterval,
@@ -123,11 +118,11 @@ doEvent.fireSpread <- function(sim, eventTime, eventType, debug = FALSE) {
 
     # schedule the next event
     sim <- scheduleEvent(sim, time(sim) + P(sim)$.saveInterval,
-                         "fireSpread", "save", .last()+1)
+                         "fireSpread", "save", .last() + 1)
   } else {
     warning(paste(
       "Undefined event type: \'", events(sim)[1, "eventType", with = FALSE],
-      "\' in module \'", events(sim)[1, "moduleName", with = FALSE],"\'",
+      "\' in module \'", events(sim)[1, "moduleName", with = FALSE], "\'",
       sep = ""
     ))
   }
