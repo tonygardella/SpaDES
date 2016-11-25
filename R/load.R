@@ -89,7 +89,7 @@ doEvent.load <- function(sim, eventTime, eventType, debug = FALSE) {
 #' @author Alex Chubaty
 #'
 #' @name loadFiles
-#' @include simulation.R
+#' @include simulation-simInit.R
 #' @importFrom data.table data.table rbindlist ':='
 #' @importFrom stringi stri_detect_fixed
 #' @importFrom raster inMemory
