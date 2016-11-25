@@ -14,7 +14,7 @@ test_that("simList object initializes correctly", {
   w <- getOption("width")
   options(width = 100L)
   out <- utils::capture.output(show(mySim))
-  expect_equal(length(out), 79)
+  expect_equal(length(out), 81)
   options(width = w); rm(w)
 
   ### SLOT .envir
@@ -163,16 +163,17 @@ test_that("simList test all signatures", {
   # inputs
   filelist <- data.frame(
     files = dir(file.path(mapPath), full.names = TRUE, pattern = "tif")[1:2],
-    functions = "raster",
-    package = "raster",
+    functions = "rasterToMemory",
+    package = "SpaDES",
     loadTime = c(0, 3),
     stringsAsFactors = FALSE
   )
+
   if (require(rgdal)) {
     on.exit(detach("package:rgdal"), add = TRUE)
 
     # objects
-    layers <- lapply(filelist$files, raster)
+    layers <- lapply(filelist$files, rasterToMemory)
     DEM <- layers[[1]]
     forestAge <- layers[[2]]
     objects <- list(DEM = "DEM", forestAge = "forestAge")
@@ -187,7 +188,6 @@ test_that("simList test all signatures", {
 
     # parameters
     parameters <- list(
-      .globals = list(stackName = "landscape"),
       caribouMovement = list(.plotInitialTime = NA),
       randomLandscapes = list(.plotInitialTime = NA, nx = 20, ny = 20)
     )
@@ -195,13 +195,11 @@ test_that("simList test all signatures", {
     # loadOrder
     loadOrder <- c("randomLandscapes", "caribouMovement", "fireSpread")
 
-    # In order in the simulation.R
-    origWd <- getwd()
-    setwd(system.file("sampleModules", package = "SpaDES"))
-
-    errors <- logical()
-    argsTested <- list()
-    for (i in 1:256) {
+    # test all argument combinations to simInit
+    N <- 256L
+    successes <- logical(N)
+    argsTested <- vector("list", length = N)
+    for (i in 1L:N) {
       li <- list(
         {if (i %% 2 ^ 1 == 0) times = times},
         {if (ceiling(i/2) %% 2 == 0) params = parameters},
@@ -216,13 +214,15 @@ test_that("simList test all signatures", {
                     "outputs", "loadOrder")
       names(li) <- argNames
       li <- li[!sapply(li, is.null)]
-      errors[i] <- tryCatch(is(do.call(simInit, args = li), "simList"),
-                            error = function(e) { FALSE },
-                            warning = function(w) { FALSE })
+      successes[i] <- tryCatch(
+        is(do.call(simInit, args = li), "simList"),
+        error = function(e) { FALSE },
+        warning = function(w) { FALSE }
+      )
       argsTested[[i]] <- names(li)
     }
-    expect_equal(sum(errors, na.rm = TRUE), 176) # needs paths and params,
-                         # many defaults are fine
-    setwd(origWd)
+
+    expect_equal(sum(successes, na.rm = TRUE), 192) # needs paths and params,
+                                                    # many defaults are fine
   }
 })
