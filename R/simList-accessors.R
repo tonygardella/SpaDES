@@ -476,7 +476,7 @@ setReplaceMethod("depends",
 #' function call, i.e., it will return \code{NULL} if used in interactive mode.
 #' The related function \code{currentModule} is simply a rapid accessor for the
 #' current module name. This latter will return the module that is in the current
-#' event queue, which will never be \code{NULL}
+#' event queue, which will never be \code{NULL}.
 #'
 #' @inheritParams modules
 #' @include simList-class.R
@@ -631,7 +631,7 @@ setMethod("P",
             if (is.null(module)) {
               module <- sim@current$moduleName
             }
-            if (length(module)>0) {
+            if (length(module) > 0) {
               if (is.null(param)) {
                 return(sim@params[[module]])
               } else {
@@ -1000,6 +1000,7 @@ setReplaceMethod("progressType",
 #'
 #' @include simList-class.R
 #' @importFrom data.table is.data.table
+#' @importFrom R.utils isAbsolutePath
 #' @importFrom stats na.omit
 #' @export
 #' @docType methods
@@ -1085,7 +1086,6 @@ setMethod("inputs",
                 if (!is.null(sim@inputs$loadTime)) {
                   obj <- data.table::copy(sim@inputs) # don't change original sim
                   set(obj, , j = "loadTime", convertTimeunit(obj$loadTime, obj$unit, sim@.envir))
-                  #obj[, loadTime := convertTimeunit(loadTime, unit, sim@.envir)]
                   obj[]
                 }
               } else {
@@ -1125,20 +1125,6 @@ setReplaceMethod(
        }
         value <- data.frame(value, stringsAsFactors = FALSE)
      }
-#      fileTable <- .fileTableIn()
-#      needRenameArgs <- grepl(names(value), pattern="arg[s]?$")
-#      if (any(needRenameArgs)) {
-#        colnames(value)[needRenameArgs] <-
-#          .fileTableInCols[pmatch("arg", .fileTableInCols)]
-#      }
-#      columns <- pmatch(names(fileTable), names(value))
-#      setnames(value, old = colnames(value)[na.omit(columns)],
-#                      new = colnames(fileTable)[!is.na(columns)])
-#      columns2 <- pmatch(names(value), names(fileTable))
-#      sim@inputs <- rbind(value[,na.omit(columns), drop = FALSE], fileTable[,columns2])
-#      if (any(is.na(columns))) {
-#        sim@inputs[,names(fileTable[,is.na(columns)])] <- NA
-#      }
      sim@inputs <- .fillInputRows(value, start(sim))
    } else {
      sim@inputs <- value
@@ -1152,9 +1138,8 @@ setReplaceMethod(
 
      # If a filename is provided, determine if it is absolute path, if so,
      # use that, if not, then append it to inputPath(sim)
-     sim@inputs[!isAbsolutePath(sim@inputs$file) & !is.na(sim@inputs$file), "file"] <-
-       file.path(inputPath(sim),
-                 sim@inputs$file[!isAbsolutePath(sim@inputs$file) & !is.na(sim@inputs$file)])
+     ids <- (!isAbsolutePath(sim@inputs$file) & !is.na(sim@inputs$file))
+     sim@inputs[ids, "file"] <- file.path(inputPath(sim), sim@inputs$file[ids])
 
      if (!all(names(sim@inputs) %in% .fileTableInCols)) {
        stop(paste("input table can only have columns named",
@@ -1321,31 +1306,32 @@ setGeneric("outputs", function(sim) {
 
 #' @export
 #' @rdname simList-accessors-inout
-setMethod("outputs",
-          signature = ".simList",
-          definition = function(sim) {
-            simUnit <- sim@simtimes[["timeunit"]]
-            saveTimeUnit <- attr(sim@outputs$saveTime, "unit")
-            if (is.null(saveTimeUnit)) saveTimeUnit <- simUnit
+setMethod(
+  "outputs",
+  signature = ".simList",
+  definition = function(sim) {
+    simUnit <- sim@simtimes[["timeunit"]]
+    saveTimeUnit <- attr(sim@outputs$saveTime, "unit")
+    if (is.null(saveTimeUnit)) saveTimeUnit <- simUnit
 
-            out <- if (is.na(pmatch(saveTimeUnit, simUnit)) &
-                       length(sim@outputs$saveTime) > 0) {
-              #note the above line captures empty saveTime,
-              # whereas is.na does not
-              if (any(!is.na(sim@outputs$saveTime))) {
-                if (!is.null(sim@outputs$saveTime)) {
-                  obj <- data.table::copy(sim@outputs) # don't change original sim
-                  obj[,saveTime := convertTimeunit(saveTime, unit, sim@.envir)]
-                  obj[]
-                  obj
-                }
-              } else {
-                sim@outputs
-              }
-            } else {
-              sim@outputs
-            }
-            return(out)
+    out <- if (is.na(pmatch(saveTimeUnit, simUnit)) &
+               length(sim@outputs$saveTime) > 0) {
+      #note the above line captures empty saveTime,
+      # whereas is.na does not
+      if (any(!is.na(sim@outputs$saveTime))) {
+        if (!is.null(sim@outputs$saveTime)) {
+          obj <- data.table::copy(sim@outputs) # don't change original sim
+          obj[,saveTime := convertTimeunit(saveTime, unit, sim@.envir)]
+          obj[]
+          obj
+        }
+      } else {
+        sim@outputs
+      }
+    } else {
+      sim@outputs
+    }
+    return(out)
 })
 
 #' @export
@@ -1375,7 +1361,7 @@ setReplaceMethod(
 
        # coerce any factors to the correct class
        for (col in which(sapply(sim@outputs, is.factor))) {
-         sim@outputs[,col] <- as(sim@outputs[[col]], class(.fileTableOut()[[col]]))
+         sim@outputs[, col] <- as(sim@outputs[[col]], class(.fileTableOut()[[col]]))
        }
 
        # if saveTime not provided, give it end(sim)
@@ -1602,7 +1588,6 @@ setReplaceMethod(
     whValueUnnamed <- rep(TRUE, length(value))
     if (length(whValueNamed)) whValueUnnamed[whValueNamed] <- FALSE
 
-
     # keep named elements, use unnamed in remaining order:
     #  cache, input, module, output
     # if (length(na.omit(wh)) < length(value)) {
@@ -1631,8 +1616,7 @@ setReplaceMethod(
     }
 
     #names(sim@paths) <- c("cachePath", "modulePath", "inputPath", "outputPath")
-    if (is(try(archivist::showLocalRepo(sim@paths$cachePath),
-               silent = TRUE),
+    if (is(try(archivist::showLocalRepo(sim@paths$cachePath), silent = TRUE),
            "try-error")) {
 
       checkPath(sim@paths$cachePath, create = TRUE)
@@ -1751,20 +1735,21 @@ setGeneric("outputPath<-",
 #' @aliases outputPath<-,.simList-method
 #' @rdname simList-accessors-paths
 #' @export
-setReplaceMethod("outputPath",
-                 signature = ".simList",
-                 function(sim, value) {
-                   sim@paths$outputPath <- unname(unlist(value))
-                   checkPath(sim@paths$outputPath, create = TRUE)
-                   if (NROW(outputs(sim)) > 0) {
-                     if ("saved" %in% colnames(outputs(sim))) {
-                       notYetSaved <- !outputs(sim)$saved | is.na(outputs(sim)$saved)
-                       outputs(sim)$file[notYetSaved] <-
-                         file.path(sim@paths$outputPath, basename(outputs(sim)$file[notYetSaved]))
-                     }
-                   }
-                   validObject(sim)
-                   return(sim)
+setReplaceMethod(
+  "outputPath",
+  signature = ".simList",
+  function(sim, value) {
+    sim@paths$outputPath <- unname(unlist(value))
+    checkPath(sim@paths$outputPath, create = TRUE)
+    if (NROW(outputs(sim)) > 0) {
+      if ("saved" %in% colnames(outputs(sim))) {
+        notYetSaved <- !outputs(sim)$saved | is.na(outputs(sim)$saved)
+        outputs(sim)$file[notYetSaved] <-
+          file.path(sim@paths$outputPath, basename(outputs(sim)$file[notYetSaved]))
+      }
+    }
+    validObject(sim)
+    return(sim)
 })
 
 ################################################################################
@@ -1871,8 +1856,10 @@ setMethod(
     if (is.null(mUnit)) {
       mUnit <- NA_character_
     }
-    t <- list(current = time(x, x@simtimes[["timeunit"]]), start = start(x, x@simtimes[["timeunit"]]),
-           end = end(x, x@simtimes[["timeunit"]]), timeunit = x@simtimes[["timeunit"]])
+    t <- list(current = time(x, x@simtimes[["timeunit"]]),
+              start = start(x, x@simtimes[["timeunit"]]),
+              end = end(x, x@simtimes[["timeunit"]]),
+              timeunit = x@simtimes[["timeunit"]])
     return(t)
 })
 
@@ -1911,7 +1898,6 @@ setReplaceMethod(
      x@simtimes$timeunit <- value$timeunit
 
      validObject(x)
-
      return(x)
 })
 
@@ -2016,7 +2002,7 @@ setMethod(
 #' @rdname simList-accessors-times
 setMethod(
   "end",
-  signature=c(".simList", "character"),
+  signature = c(".simList", "character"),
   definition = function(x, unit) {
 
     if (!is.na(unit)) {
@@ -2140,7 +2126,7 @@ setMethod(
   signature = c(".simList"),
   definition = function(x) {
     mod <- x@current$moduleName # currentModule(x)
-    out <- if (length(mod)>0) {
+    out <- if (length(mod) > 0) {
       timeunits(x)[[mod]]
     } else {
       x@simtimes[["timeunit"]]
@@ -2293,11 +2279,11 @@ setMethod(
 #' Currently, only get and set methods are defined. Subset methods are not.
 #'
 #' @note Each event is represented by a \code{\link{data.table}} row consisting of:
-#'        \tabular{ll}{
-#'          \code{eventTime} \tab The time the event is to occur.\cr
-#'          \code{moduleName} \tab The module from which the event is taken.\cr
-#'          \code{eventType} \tab A character string for the programmer-defined event type.\cr
-#'        }
+#' \itemize{
+#'   \item \code{eventTime}: The time the event is to occur.
+#'   \item \code{moduleName}: The module from which the event is taken.
+#'   \item \code{eventType}:  A character string for the programmer-defined event type.
+#' }
 #'
 #' @inheritParams objs
 #'
@@ -2331,8 +2317,7 @@ setMethod(
   definition = function(sim, unit) {
     out <- if (is.na(pmatch("second", unit)) &
                (length(sim@events$eventTime) > 0)) {
-      #note the above line captures empty eventTime,
-      # whereas is.na does not
+      # note the above line captures empty eventTime, whereas is.na does not
       if (any(!is.na(sim@events$eventTime))) {
         if (!is.null(sim@events$eventTime)) {
           obj <- data.table::copy(sim@events) # don't change original sim
