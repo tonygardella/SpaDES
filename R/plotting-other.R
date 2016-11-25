@@ -386,9 +386,9 @@ dev <- function(x, ...) {
     }
   }
   if (is.null(dev.list())) newPlot(...)
-  if (.Platform$OS.type != "unix") {
-    while (dev.set(x) < x) newPlot(...)
-  }
+
+  while (dev.set(x) < x) newPlot(...)
+
   return(invisible(dev.cur()))
 }
 
@@ -407,11 +407,14 @@ dev <- function(x, ...) {
 #' @author Eliot McIntire and Alex Chubaty
 #'
 #' @export
-#' @importFrom grDevices dev.new
+#' @importFrom grDevices dev.new x11
 #' @docType methods
 #' @rdname newPlot
 newPlot <- function(noRStudioGD = TRUE, ...) {
-  dev.new(noRStudioGD = TRUE, ...)
+  if (Sys.info()["sysname"] == "Linux")
+    x11(...)
+  else
+    dev.new(noRStudioGD = TRUE, ...)
 }
 
 assign(".parOrig", envir = .spadesEnv,
