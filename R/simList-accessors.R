@@ -1321,7 +1321,7 @@ setMethod(
       if (any(!is.na(sim@outputs$saveTime))) {
         if (!is.null(sim@outputs$saveTime)) {
           obj <- data.table::copy(sim@outputs) # don't change original sim
-          obj[,saveTime := convertTimeunit(saveTime, unit, sim@.envir)]
+          obj[, saveTime := convertTimeunit(saveTime, unit, sim@.envir)]
           obj[]
           obj
         }

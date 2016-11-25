@@ -286,15 +286,15 @@ This function (as with `POM` and `splitRaster`) is parallel-aware and can either
 ?experiment # will give many more examples than here
 
 # Copy Example 5 here:
- mySim <- simInit(
-    times = list(start = 0.0, end = 2.0, timeunit = "year"),
-    params = list(.globals = list(stackName = "landscape", burnStats = "nPixelsBurned")),
-    modules = list("randomLandscapes", "fireSpread", "caribouMovement"),
-    paths = list(modulePath = system.file("sampleModules", package = "SpaDES"),
-                 outputPath = tmpdir),
-    # Save final state of landscape and caribou
-    outputs = data.frame(objectName = c("landscape", "caribou"), stringsAsFactors = FALSE)
-  )
+mySim <- simInit(
+  times = list(start = 0.0, end = 2.0, timeunit = "year"),
+  params = list(.globals = list(stackName = "landscape", burnStats = "nPixelsBurned")),
+  modules = list("randomLandscapes", "fireSpread", "caribouMovement"),
+  paths = list(modulePath = system.file("sampleModules", package = "SpaDES"),
+               outputPath = tmpdir),
+  # Save final state of landscape and caribou
+  outputs = data.frame(objectName = c("landscape", "caribou"), stringsAsFactors = FALSE)
+)
 
 sims <- experiment(mySim, replicates = 2)
 attr(sims, "experiment")$expDesign # shows 2 replicates of same experiment

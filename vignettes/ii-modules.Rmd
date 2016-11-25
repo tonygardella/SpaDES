@@ -323,14 +323,14 @@ Note that only the start time of the event is meaningful is these figures: the w
 library(igraph) # for %>%
 library(SpaDES)
 parameters <- list(
-  .globals = list(stackName = "landscape", burnStats = "nPixelsBurned"),
+  .globals = list(burnStats = "nPixelsBurned"),
   .progress = list(NA),
-  randomLandscapes = list(nx = 100L, ny = 100L, inRAM = TRUE),
-  fireSpread = list(nFires = 10L, spreadprob = 0.225, its = 1e6,
-                    persistprob = 0, returnInterval = 1, startTime = 0,
+  randomLandscapes = list(stackName = "landscape", nx = 100L, ny = 100L, inRAM = TRUE),
+  fireSpread = list(stackName = "landscape",  nFires = 10L, spreadprob = 0.225,
+                    its = 1e6, persistprob = 0, returnInterval = 1, startTime = 0,
                     .plotInitialTime = 0, .plotInterval = 10),
-  caribouMovement = list(N = 100L, moveInterval = 1, torus = TRUE,
-                         .plotInitialTime = 1, .plotInterval = 1)
+  caribouMovement = list(stackName = "landscape", N = 100L, moveInterval = 1,
+                         torus = TRUE, .plotInitialTime = 1, .plotInterval = 1)
 )
 
 ftmp <- file.path(tempdir(), "spades_vignetteOutputs")

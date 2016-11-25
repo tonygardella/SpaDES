@@ -171,11 +171,10 @@ adj.raw <- function(x = NULL, cells, directions = 8, sort = FALSE, pairs = TRUE,
     if (!is.null(id)) adj <- cbind(adj, id = rep.int(id, times = numToCells))
   } else {
     adj <- data.table(from = fromCells, to = toCells)
-    if (!is.null(id)) set(adj, , "id", rep.int(id, times = numToCells)) #adj[,id:=rep.int(id, times = 4)]
+    if (!is.null(id)) set(adj, , "id", rep.int(id, times = numToCells)) #adj[, id := rep.int(id, times = 4)]
   }
 
   if (useMatrix) {
-
     ################################################
     # Remove all cells that are not target cells, if target is a vector of cells
     if (!is.null(target)) {

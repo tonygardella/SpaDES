@@ -49,10 +49,10 @@ setMethod(
 
     lapply(deps@dependencies, function(x) {
       if (!is.null(x)) {
-        z.in <- as.data.table(x@inputObjects)[,.(objectName, objectClass)]
-        z.out <- as.data.table(x@outputObjects)[,.(objectName, objectClass)]
+        z.in <- as.data.table(x@inputObjects)[, .(objectName, objectClass)]
+        z.out <- as.data.table(x@outputObjects)[, .(objectName, objectClass)]
         z.in$module <- z.out$module <- x@name
-        if (!all(is.na(z.in[,objectName]), is.na(z.in[, objectClass]))) {
+        if (!all(is.na(z.in[, objectName]), is.na(z.in[, objectClass]))) {
           sim.in <<- rbindlist(list(sim.in, z.in), use.names = TRUE)
         }
         if (!all(is.na(z.out[,1:2]), is.na(z.out[, objectClass]))) {
@@ -67,7 +67,7 @@ setMethod(
 
     if ((nrow(sim.in)) && (nrow(sim.out))) {
       dx <- sim.out[sim.in, nomatch = NA_character_, allow.cartesian = TRUE]
-      dx[is.na(module), module:="_INPUT_"]
+      dx[is.na(module), module := "_INPUT_"]
       DT <- dx[,list(from = module, to = i.module,
                      objName = objectName, objClass = i.objectClass)]
 

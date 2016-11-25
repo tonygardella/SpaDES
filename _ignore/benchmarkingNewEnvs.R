@@ -22,12 +22,12 @@ ras2 <- 1:10
 # Note return invisible empty ... means no copy is made. The object is actually modified in place
 #  as long as it is the same name, i.e., sim, as the environment name
 changeValDT  <- function(sim, index, val) {
-  sim$landscapeDT[index,hello:=val]
+  sim$landscapeDT[index, hello := val]
   invisible()
 }
 
 changeValDTNoSim  <- function(sim, index, val) {
-  landscapeDT[index,hello:=val]
+  landscapeDT[index, hello := val]
   invisible()
 }
 
@@ -36,14 +36,14 @@ changeValRas  <- function(sim, index, val) {
   invisible()
 }
 
-index=sample(N^2, 5); print(index)
+index <- sample(N^2, 5); print(index)
 
 # Note - exact same time, meaning no copying is happening
-microbenchmark(times=2000,
-               new=changeValDT(sim, index=index, val=index),
-               old=#{landscape <- getGlobal("landscape"); 
-                landscapeDT[index,hello:=index],
-               alt=changeValDTNoSim(sim, index=index, val=index)
+microbenchmark(times = 2000,
+               new = changeValDT(sim, index = index, val = index),
+               old = #{landscape <- getGlobal("landscape");
+                landscapeDT[index,hello := index],
+               alt = changeValDTNoSim(sim, index = index, val = index)
                # assignGlobal("landscape")}
                )
 print(sim$landscapeDT[index,])
