@@ -25,12 +25,9 @@
 #' @rdname emptyEventList
 #'
 #' @author Alex Chubaty
-setGeneric(".emptyEventList", function(eventTime, moduleName, eventType, eventPriority) {
-  standardGeneric(".emptyEventList")
-})
-
-#' @rdname emptyEventList
 #' @importFrom data.table data.table
+#' @name emptyEventList
+#' @rdname emptyEventList
 .emptyEventListDT <- data.table(eventTime = integer(0L), moduleName = character(0L),
                                 eventType = character(0L), eventPriority = numeric(0L))
 
@@ -38,6 +35,11 @@ setGeneric(".emptyEventList", function(eventTime, moduleName, eventType, eventPr
 #' @importFrom data.table data.table
 .singleEventListDT <- data.table(eventTime = integer(1L), moduleName = character(1L),
                                  eventType = character(1L), eventPriority = numeric(1L))
+
+#' @rdname emptyEventList
+setGeneric(".emptyEventList", function(eventTime, moduleName, eventType, eventPriority) {
+  standardGeneric(".emptyEventList")
+})
 
 #' @rdname emptyEventList
 #' @importFrom data.table set copy
@@ -78,6 +80,20 @@ setMethod(
 #' @rdname emptyEventList
 .emptyEventListNA <- .emptyEventList(NA_integer_, NA_character_, NA_character_, NA_integer_)
 
+#' @rdname emptyEventList
+.currentEventDT <- .emptyEventList(numeric(1), character(1), character(1), numeric(1))
+
+#' @rdname emptyEventList
+.eventsDT <- lapply(0:99, function(i) {
+  data.table(eventTime = integer(i), moduleName = character(i),
+             eventType = character(i), eventPriority = numeric(i))
+})
+
+#' @rdname emptyEventList
+.numColsEventList <- length(.emptyEventListCols)
+
+#' @rdname emptyEventList
+.lengthEventsDT <- length(.eventsDT) + 1
 
 ################################################################################
 #' Default (empty) metadata
@@ -133,10 +149,12 @@ setMethod(
 #' @param functionCall A character string identifying the function name to be
 #' searched in the call stack. Default is "simInit"
 #'
-#' @docType methods
-#' @rdname findObjects
-#' @name findObjects
 #' @author Eliot McIntire
+#' @docType methods
+#' @keywords internal
+#' @name findObjects
+#' @rdname findObjects
+#'
 .findObjects <- function(objects, functionCall = "simInit") {
   scalls <- sys.calls()
   grep1 <- grep(as.character(scalls), pattern = functionCall)
@@ -144,9 +162,7 @@ setMethod(
     tryCatch(
       is(parse(text = x), "expression"),
       error = function(y) { NA })
-  })], na.rm = TRUE)-1, 1)
+  })], na.rm = TRUE) - 1, 1)
   # Convert character strings to their objects
   lapply(objects, function(x) get(x, envir = sys.frames()[[grep1]]))
 }
-
-

@@ -87,19 +87,19 @@ setMethod(
               if (NROW(cur) > 0) {
                 evnts1 <- data.frame(current(sim))
                 widths <- str_length(format(evnts1))
-                sim$.spadesDebugWidth <-
-                  pmax(widths, sim$.spadesDebugWidth)
-                evnts1[1L, ] <- format(evnts1) %>%
-                  str_pad(., side = "right", sim$.spadesDebugWidth)
+                sim@.envir[[".spadesDebugWidth"]] <-
+                  pmax(widths, sim@.envir[[".spadesDebugWidth"]])
+                evnts1[1L, ] <-
+                  str_pad(format(evnts1), side = "right", sim@.envir[[".spadesDebugWidth"]])
 
-                if (sim$.spadesDebugFirst) {
+                if (sim@.envir[[".spadesDebugFirst"]]) {
                   evnts2 <- evnts1
-                  evnts2[1L:2L, ] <- names(evnts1) %>%
-                    str_pad(., sim$.spadesDebugWidth) %>%
-                    rbind(., evnts1)
+                  evnts2[1L:2L, ] <- rbind(
+                    str_pad(names(evnts1), sim@.envir[[".spadesDebugWidth"]]),
+                    evnts1)
                   cat("This is the current event, printed as it is happening:\n")
                   write.table(evnts2, quote = FALSE, row.names = FALSE, col.names = FALSE)
-                  sim$.spadesDebugFirst <- FALSE
+                  sim@.envir[[".spadesDebugFirst"]] <- FALSE
                 } else {
                   colnames(evnts1) <- NULL
                   write.table(evnts1, quote = FALSE, row.names = FALSE)
@@ -131,7 +131,7 @@ setMethod(
           } else {
             # for future caching of modules
             cacheIt <- FALSE
-            a <- sim@params[[cur[["moduleName"]]]]$.useCache
+            a <- sim@params[[cur[["moduleName"]]]][[".useCache"]]
             if (!is.null(a)) { #.useCache is a parameter
               if (!identical(FALSE, a)) { #.useCache is not FALSE
                 if (!isTRUE(a)) { #.useCache is not TRUE
@@ -144,20 +144,20 @@ setMethod(
               }
             }
 
-            # if (!is.null(sim@params[[cur[["moduleName"]]]]$.useCache)) {
-            #   if (!identical(FALSE, sim@params[[cur[["moduleName"]]]]$.useCache)) {
-            #     if (!isTRUE(sim@params[[cur[["moduleName"]]]]$.useCache)) {
-            #       if (cur[["eventType"]] %in% sim@params[[cur[["moduleName"]]]]$.useCache) {
+            # if (!is.null(sim@params[[cur[["moduleName"]]]][[".useCache"]])) {
+            #   if (!identical(FALSE, sim@params[[cur[["moduleName"]]]][[".useCache"]])) {
+            #     if (!isTRUE(sim@params[[cur[["moduleName"]]]][[".useCache"]])) {
+            #       if (cur[["eventType"]] %in% sim@params[[cur[["moduleName"]]]][[".useCache"]]) {
             #
             #       }
             #     }
             #   }
             # }
             if (cacheIt) {
+              objNam <- sim@depends@dependencies[[cur[["moduleName"]]]]@outputObjects$objectName
               moduleSpecificObjects <- c(grep(ls(sim), pattern = cur[["moduleName"]], value = TRUE),
-                                         na.omit(sim@depends@dependencies[[cur[["moduleName"]]]]@inputObjects$objectName))
-              moduleSpecificOutputObjects <-
-                sim@depends@dependencies[[cur[["moduleName"]]]]@outputObjects$objectName
+                                         na.omit(objNam))
+              moduleSpecificOutputObjects <- objNam
               sim <- Cache(FUN = get(moduleCall, envir = sim@.envir),
                            sim = sim,
                            eventTime = cur[["eventTime"]], eventType = cur[["eventType"]],
@@ -191,7 +191,7 @@ setMethod(
             completed <- tail(completed, n = getOption("spades.nCompleted"))
           }
         } else {
-          completed <- cur
+          completed <- data.table::copy(cur)
         }
         sim@completed <- completed
         # current event completed, replace current with empty
@@ -333,21 +333,34 @@ setMethod(
         }
         attributes(eventTimeInSeconds)$unit <- "second"
 
-        newEvent <- .emptyEventList(
+        newEvent <- data.table::copy(.singleEventListDT)
+        newEventList <- list(
           eventTime = eventTimeInSeconds,
           moduleName = moduleName,
           eventType = eventType,
           eventPriority = eventPriority
         )
+        for(i in 1:.numColsEventList) set(newEvent, , i, newEventList[[i]])
 
         # if the event list is empty, set it to consist of newEvent and return;
         # otherwise, add newEvent and re-sort (rekey).
         evnts <- sim@events #events(sim, "second")
-        if (NROW(evnts) == 0L) {
+        nrowEvnts <- NROW(evnts)
+        if (nrowEvnts == 0L) {
           sim@events <- setkey(newEvent, "eventTime", "eventPriority")
         } else {
-          sim@events <- rbindlist(list(evnts, newEvent)) %>%
-            setkey("eventTime", "eventPriority")
+          # This is faster than rbindlist below. So, use for smaller event queues
+          if(nrowEvnts<.lengthEventsDT) {
+            for(i in 1:.numColsEventList) {
+              set(.eventsDT[[nrowEvnts+2]], ,i, c(evnts[[i]], newEvent[[i]]))
+            }
+            sim@events <- data.table::copy(.eventsDT[[nrowEvnts+2]]) %>%
+              setkey("eventTime", "eventPriority")
+          } else {
+            sim@events <- rbindlist(list(evnts, newEvent)) %>%
+              setkey("eventTime", "eventPriority")
+          }
+
         }
       }
     } else {
@@ -616,8 +629,8 @@ setMethod(
     }
 
     if (!(all(sapply(debug, identical, FALSE)))) {
-      sim$.spadesDebugFirst <- TRUE
-      sim$.spadesDebugWidth <- c(9, 10, 9, 13)
+      sim@.envir[[".spadesDebugFirst"]] <- TRUE
+      sim@.envir[[".spadesDebugWidth"]] <- c(9, 10, 9, 13)
     }
     while (sim@simtimes[["current"]] <= sim@simtimes[["end"]]) {
       sim <- doEvent(sim, debug = debug, notOlderThan = notOlderThan)  # process the next event
@@ -645,8 +658,7 @@ setMethod(
     #   notOlderThan <- NULL
 
     if (cache) {
-      if (is(try(archivist::showLocalRepo(sim@paths$cachePath), silent = TRUE)
-             , "try-error"))
+      if (is(try(archivist::showLocalRepo(sim@paths$cachePath), silent = TRUE), "try-error"))
         archivist::createLocalRepo(paths(sim)$cachePath)
 
       return(
