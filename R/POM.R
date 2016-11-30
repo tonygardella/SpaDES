@@ -23,7 +23,7 @@
 #' }
 #'
 #' Option 1 offers more control to the user, but may require more knowledge.
-#' Option 1 should likely contain a call to \code{simInit(copy(simList))} and
+#' Option 1 should likely contain a call to \code{simInit(Copy(simList))} and
 #' \code{spades} internally.
 #' See examples that show simple examples of each type, option 1 and option 2.
 #' In both cases, \code{params} is required to indicate which parameters can be
@@ -233,7 +233,7 @@ setMethod(
         keepGoing <- TRUE
         tryNum <- 1
         while (keepGoing) {
-          sim_ <- SpaDES::copy(sim)
+          sim_ <- Copy(sim)
           whP <- 0
           for (wh in seq_along(whParamsByMod)) {
             whP <- whP + 1

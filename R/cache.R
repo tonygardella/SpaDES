@@ -123,10 +123,10 @@
 #'
 #'   # This functionality can be achieved within a spades call
 #'   # compare caching ... run once to create cache
-#'   system.time(outSim <- spades(copy(mySim), cache = TRUE, notOlderThan = Sys.time(),
+#'   system.time(outSim <- spades(Copy(mySim), cache = TRUE, notOlderThan = Sys.time(),
 #'                                .plotInitialTime = NA))
 #'   # compare... second time is fast
-#'   system.time(outSimCached <- spades(copy(mySim), cache = TRUE, .plotInitialTime = NA))
+#'   system.time(outSimCached <- spades(Copy(mySim), cache = TRUE, .plotInitialTime = NA))
 #'   all.equal(outSim, outSimCached)
 #'
 #'   # Function caching
@@ -147,13 +147,13 @@
 #'   # simply for trying something out, or putting into production code
 #'   # (e.g., publication, decision support, etc.)
 #'   params(mySim)$randomLandscapes$.useCache <- TRUE
-#'   system.time(randomSim <- spades(SpaDES::copy(mySim), .plotInitialTime = NA,
+#'   system.time(randomSim <- spades(Copy(mySim), .plotInitialTime = NA,
 #'                                  notOlderThan = Sys.time(), debug = TRUE))
 #'
 #'   # user  system elapsed
 #'   # 1.26    0.25    7.00
 #'   # Vastly faster
-#'   system.time(randomSimCached <- spades(SpaDES::copy(mySim), .plotInitialTime = NA,
+#'   system.time(randomSimCached <- spades(Copy(mySim), .plotInitialTime = NA,
 #'                                  debug = TRUE))
 #'    # user  system elapsed
 #'    # 0.22    0.00    0.24

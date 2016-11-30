@@ -49,15 +49,30 @@ setMethod(
   signature(sim = "simList"),
   definition = function(sim, debug, notOlderThan) {
     # core modules
-    core <- list("checkpoint", "save", "progress", "load")
+    core <- list(checkpoint = "checkpoint",
+                 save = "save",
+                 progress = "progress",
+                 load = "load")
 
     cur <- sim@current
     if (NROW(cur) == 0) {
       evnts <- sim@events
       # get next event from the queue and remove it from the queue
-      if (NROW(evnts)) {
-        sim@current <- evnts[1L, ]
-        sim@events <- evnts[-1L, ]
+      nrowEvnts <- NROW(sim@events)
+      if (nrowEvnts) {
+        # next block much faster than 'sim@current <- sim@events[1L,]'!
+        if (nrowEvnts < .lengthEventsDT) {
+          for (i in 1:.numColsEventList) {
+            set(.currentEventDT, 1L, i, sim@events[[i]][[1]])
+            set(.eventsDT[[nrowEvnts]], , i, sim@events[[i]][-1])
+          }
+          sim@current <- .currentEventDT
+          sim@events <- .eventsDT[[nrowEvnts]]
+        } else {
+          # above replaces these two lines
+          sim@current <- sim@events[1L, ]
+          sim@events <- sim@events[-1L, ]
+        }
       } else {
         # no more events, return empty event list
         sim@current <- .emptyEventListObj
@@ -128,7 +143,7 @@ setMethod(
         }
 
         if (cur[["moduleName"]] %in% sim@modules) {
-          if (cur[["moduleName"]] %in% core) {
+          if (!is.null(core[[cur[["moduleName"]]]])) {
             sim <- get(paste0("doEvent.", cur[["moduleName"]]))(sim, cur[["eventTime"]], cur[["eventType"]], debugDoEvent)
           } else {
             # for future caching of modules
@@ -186,6 +201,9 @@ setMethod(
         # add to list of completed events
         compl <- sim@completed
         if (NROW(compl)) {
+          # Do not use pre-existing data.tables that get updated b/c completed will almost
+          #  always be large (NROW(completed) > 20), so can't realistically pre-create
+          #  many data.tables
           completed <- list(compl, cur) %>%
             rbindlist()
           if (NROW(completed) > getOption("spades.nCompleted")) {
@@ -200,7 +218,7 @@ setMethod(
       } else {
         # update current simulated time and event
         sim@simtimes[["current"]] <- sim@simtimes[["end"]] + 1
-        if (NROW(evnts)) {
+        if (NROW(sim@events)) { #i.e., if no more events
           sim@events <- rbind(sim@current, sim@events)
           sim@current <- .emptyEventListObj
         }
@@ -345,24 +363,23 @@ setMethod(
 
         # if the event list is empty, set it to consist of newEvent and return;
         # otherwise, add newEvent and re-sort (rekey).
-        evnts <- sim@events #events(sim, "second")
-        nrowEvnts <- NROW(evnts)
+        nrowEvnts <- NROW(sim@events)
+
         if (nrowEvnts == 0L) {
-          sim@events <- setkey(newEvent, "eventTime", "eventPriority")
+          # here, copy the newEVent to break connection between .singleEventListDT and sim@events
+          sim@events <- newEvent #%>% setkey("eventTime", "eventPriority")
         } else {
           # This is faster than rbindlist below. So, use for smaller event queues
-          if(nrowEvnts<.lengthEventsDT) {
+          if (nrowEvnts < .lengthEventsDT) {
             for(i in 1:.numColsEventList) {
-              set(.eventsDT[[nrowEvnts+2]], ,i, c(evnts[[i]], newEvent[[i]]))
+              set(.eventsDT[[nrowEvnts+2]], ,i, c(sim@events[[i]], newEvent[[i]]))
             }
-            sim@events <- data.table::copy(.eventsDT[[nrowEvnts+2]]) %>%
-              setkey("eventTime", "eventPriority")
+            sim@events <- .eventsDT[[nrowEvnts+2]]
           } else {
-            sim@events <- rbindlist(list(evnts, newEvent)) %>%
-              setkey("eventTime", "eventPriority")
+            sim@events <- rbindlist(list(sim@events, newEvent))
           }
-
         }
+        setkey(sim@events, "eventTime", "eventPriority")
       }
     } else {
       warning(
@@ -579,6 +596,11 @@ setMethod(
                         .saveInitialTime,
                         notOlderThan,
                         ...) {
+
+    # The event queues are not uncopied data.tables, for speed during simulation
+    #  Must, therefore, break connection between spades calls
+    .refreshEventQueues()
+
     if (!is.null(.plotInitialTime)) {
       if (!is.numeric(.plotInitialTime))
         .plotInitialTime <- as.numeric(.plotInitialTime)

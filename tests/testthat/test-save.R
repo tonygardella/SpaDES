@@ -77,7 +77,7 @@ test_that("saving csv files does not work correctly", {
         stringsAsFactors = FALSE)
    # since write.csv has a default of adding a column, x, with rownames, must add additional
    #   argument for 6th row in data.frame (corresponding to the write.csv function)
-   sim2 <- SpaDES::copy(sim)
+   sim2 <- Copy(sim)
    outputArgs(sim2)[[6]] <- list(row.names = FALSE)
    sim2 <- spades(sim2)
    outputs(sim2)
@@ -87,7 +87,7 @@ test_that("saving csv files does not work correctly", {
    expect_true(identical(df1, newObj))
 
    # Confirm that arguments are actually being passed in by changing row.names to TRUE
-   sim2 <- copy(sim)
+   sim2 <- Copy(sim)
    outputArgs(sim2)[[6]] <- list(row.names = TRUE)
    sim2 <- spades(sim2)
    outputs(sim2)
