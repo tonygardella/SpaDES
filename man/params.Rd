@@ -26,11 +26,11 @@ P(sim, module = NULL, param = NULL)
 
 \S4method{P}{.simList}(sim, module = NULL, param = NULL)
 
+p(sim, module = NULL, param = NULL)
+
 parameters(sim, asDF = FALSE)
 
 \S4method{parameters}{.simList}(sim, asDF = FALSE)
-
-p(sim, module = NULL, param = NULL)
 }
 \arguments{
 \item{sim}{A \code{simList} object from which to extract element(s) or
@@ -79,8 +79,7 @@ conflicts with a shiny app.
 \examples{
 modules = list("randomLandscapes")
 paths = list(modulePath = system.file("sampleModules", package = "SpaDES"))
-mySim <- simInit(modules = modules, paths = paths,
-                 params = list(.globals = list(stackName = "landscape")))
+mySim <- simInit(modules = modules, paths = paths)
 parameters(mySim)
 
 }

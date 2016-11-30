@@ -236,13 +236,13 @@ defineModule(sim, list(
 ## event types
 #   - type `init` is required for initialiazation
 
-doEvent.", name, " = function(sim, eventTime, eventType, debug = FALSE) {
+doEvent = function(sim, eventTime, eventType, debug = FALSE) {
   if (eventType == \"init\") {
     ### check for more detailed object dependencies:
     ### (use `checkObject` or similar)
 
     # do stuff for this event
-    sim <- sim$", name, "Init(sim)
+    sim <- sim$init(sim)
 
     # schedule future event(s)
     sim <- scheduleEvent(sim, P(sim)$.plotInitialTime, \"", name, "\", \"plot\")
@@ -310,7 +310,7 @@ doEvent.", name, " = function(sim, eventTime, eventType, debug = FALSE) {
 #   - keep event functions short and clean, modularize by calling subroutines from section below.
 
 ### template initialization
-", name, "Init <- function(sim) {
+init <- function(sim) {
   # # ! ----- EDIT BELOW ----- ! #
 
   # ! ----- STOP EDITING ----- ! #
@@ -339,7 +339,7 @@ doEvent.", name, " = function(sim, eventTime, eventType, debug = FALSE) {
 }
 
 ### template for your event1
-", name, "Event1 <- function(sim) {
+event1 <- function(sim) {
   # ! ----- EDIT BELOW ----- ! #
   # THE NEXT TWO LINES ARE FOR DUMMY UNIT TESTS; CHANGE OR DELETE THEM.
   sim$event1Test1 <- \" this is test for event 1. \" # for dummy unit test
@@ -351,7 +351,7 @@ doEvent.", name, " = function(sim, eventTime, eventType, debug = FALSE) {
 }
 
 ### template for your event2
-", name, "Event2 <- function(sim) {
+event2 <- function(sim) {
   # ! ----- EDIT BELOW ----- ! #
   # THE NEXT TWO LINES ARE FOR DUMMY UNIT TESTS; CHANGE OR DELETE THEM.
   sim$event2Test1 <- \" this is test for event 2. \" # for dummy unit test

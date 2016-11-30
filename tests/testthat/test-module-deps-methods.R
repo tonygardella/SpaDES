@@ -105,7 +105,7 @@ test_that("defineModule correctly handles different inputs", {
 test_that("depsEdgeList and depsGraph work", {
   times <- list(start = 0.0, end = 10)
   params <- list(
-    .globals = list(burnStats = "npixelsburned", stackName = "landscape"),
+    .globals = list(burnStats = "npixelsburned"),
     randomLandscapes = list(.plotInitialTime = NA, .plotInterval = NA),
     caribouMovement = list(.plotInitialTime = NA, .plotInterval = NA),
     fireSpread = list(.plotInitialTime = NA, .plotInterval = NA)

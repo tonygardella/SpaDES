@@ -116,10 +116,10 @@
 #' @author Eliot McIntire
 #' @examples
 #' \dontrun{
-#' mySim <- simInit(times=list(start=0.0, end=5.0),
-#'                  params=list(.globals=list(stackName="landscape", burnStats = "testStats")),
-#'                  modules=list("randomLandscapes", "fireSpread"),
-#'                  paths=list(modulePath=system.file("sampleModules", package="SpaDES")))
+#' mySim <- simInit(times = list(start = 0.0, end = 5.0),
+#'                  params = list(.globals = list(burnStats = "testStats")),
+#'                  modules = list("randomLandscapes", "fireSpread"),
+#'                  paths = list(modulePath = system.file("sampleModules", package = "SpaDES")))
 #'
 #'   # This functionality can be achieved within a spades call
 #'   # compare caching ... run once to create cache
@@ -130,7 +130,7 @@
 #'   all.equal(outSim, outSimCached)
 #'
 #'   # Function caching
-#'   ras <- raster(extent(0,1e3,0,1e3),res = 1)
+#'   ras <- raster(extent(0, 1e3, 0, 1e3), res = 1)
 #'   system.time(map <- Cache(gaussMap, ras, cacheRepo = cachePath(mySim),
 #'                            notOlderThan = Sys.time()))
 #'   # second time much faster

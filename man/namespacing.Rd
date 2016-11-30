@@ -36,7 +36,7 @@ This will only return the module name if it is inside a \code{spades}
 function call, i.e., it will return \code{NULL} if used in interactive mode.
 The related function \code{currentModule} is simply a rapid accessor for the
 current module name. This latter will return the module that is in the current
-event queue, which will never be \code{NULL}
+event queue, which will never be \code{NULL}.
 }
 \author{
 Eliot McIntire

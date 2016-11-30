@@ -163,8 +163,12 @@ setClass(
     }
 
     # data.frame checking
-    if (length(object@inputObjects)<1L) stop("input object name and class must be specified, or NA.")
-    if (length(object@outputObjects)<1L) stop("output object name and class must be specified, or NA.")
+    if (length(object@inputObjects) < 1L) {
+      stop("input object name and class must be specified, or NA.")
+    }
+    if (length(object@outputObjects) < 1L) {
+      stop("output object name and class must be specified, or NA.")
+    }
     if ( !all(c("objectName", "objectClass", "other") %in% colnames(object@inputObjects)) ) {
       stop("input object data.frame must use colnames objectName, objectClass, and other.")
     }
@@ -205,6 +209,9 @@ setClass(
 #'
 #' @slot dependencies   List of \code{\link{.moduleDeps}} dependency objects.
 #'
+#' @slot .allObjNames  A named list in which to store the names of all input/output
+#'                     objects, for fast lookup during the simulation.
+#'
 #' @seealso \code{\link{.moduleDeps}}, \code{\link{spadesClasses}}
 #'
 #' @aliases .simDeps
@@ -215,8 +222,11 @@ setClass(
 #'
 setClass(
   ".simDeps",
-  slots = list(dependencies = "list"),
-  prototype = list(dependencies = list(NULL)),
+  slots = list(dependencies = "list", .allObjNames = "list"),
+  prototype = list(
+    dependencies = list(NULL),
+    .allObjNames = list(NULL)
+  ),
   validity = function(object) {
     # remove empty (NULL) elements
     object@dependencies <- object@dependencies[lapply(object@dependencies, length) > 0]

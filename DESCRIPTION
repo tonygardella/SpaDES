@@ -11,8 +11,8 @@ Description: Implement a variety of event-based models, with a focus on
     'install.packages("fastshp", repos = "http://rforge.net", type = "source")'.
 URL: http://spades.predictiveecology.org,
     https://github.com/PredictiveEcology/SpaDES
-Version: 1.3.1.9015
-Date: 2016-11-01
+Version: 1.3.1.9016
+Date: 2016-11-28
 Authors@R: c(
     person(c("Alex", "M"), "Chubaty", email = "alexander.chubaty@canada.ca",
     role = c("aut", "cre")),
@@ -100,7 +100,8 @@ Collate:
     'copy.R'
     'experiment.R'
     'initialize.R'
-    'simulation.R'
+    'simulation-parseModule.R'
+    'simulation-simInit.R'
     'load.R'
     'mapReduce.R'
     'mergeRaster.R'
@@ -109,6 +110,7 @@ Collate:
     'module-repository.R'
     'module-template.R'
     'moduleCoverage.R'
+    'moduleDefines.R'
     'movement.R'
     'neighbourhood.R'
     'numerical-comparisons.R'
@@ -125,6 +127,7 @@ Collate:
     'rstudio-addins.R'
     'save.R'
     'shine.R'
+    'simulation-spades.R'
     'spades-classes.R'
     'spades-package.R'
     'splitRaster.R'

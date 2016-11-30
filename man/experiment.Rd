@@ -210,7 +210,7 @@ if (interactive()) {
   mySim <- simInit(
     times = list(start = 0.0, end = 2.0, timeunit = "year"),
     params = list(
-      .globals = list(stackName = "landscape", burnStats = "nPixelsBurned"),
+      .globals = list(burnStats = "nPixelsBurned"),
       # Turn off interactive plotting
       fireSpread = list(.plotInitialTime = NA),
       caribouMovement = list(.plotInitialTime = NA),
@@ -307,7 +307,6 @@ if (interactive()) {
   mySimRL <- simInit(
     times = list(start = 0.0, end = 0.1, timeunit = "year"),
     params = list(
-      .globals = list(stackName = "landscape"),
       # Turn off interactive plotting
       randomLandscapes = list(.plotInitialTime = NA)
     ),
@@ -327,7 +326,7 @@ if (interactive()) {
   mySimNoRL <- simInit(
     times = list(start = 0.0, end = 1, timeunit = "year"), # only 1 year to save time
     params = list(
-      .globals = list(stackName = "landscape", burnStats = "nPixelsBurned"),
+      .globals = list(burnStats = "nPixelsBurned"),
       # Turn off interactive plotting
       fireSpread = list(.plotInitialTime = NA),
       caribouMovement = list(.plotInitialTime = NA)
@@ -364,7 +363,7 @@ if (interactive()) {
   mySimInputs <- simInit(
     times = list(start = 0.0, end = 2.0, timeunit = "year"),
     params = list(
-      .globals = list(stackName = "landscape", burnStats = "nPixelsBurned"),
+      .globals = list(burnStats = "nPixelsBurned"),
       # Turn off interactive plotting
       fireSpread = list(.plotInitialTime = NA),
       caribouMovement = list(.plotInitialTime = NA)

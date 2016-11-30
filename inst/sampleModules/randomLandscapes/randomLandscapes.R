@@ -1,4 +1,4 @@
-usesSpaDESVersion <- "1.1.0"
+usesSpaDESVersion <- "1.3.1.9016"
 if (packageVersion("SpaDES") < usesSpaDESVersion) {
   stop("This randomLandscapes module was built with SpaDES version", usesSpaDESVersion,
        "Please update SpaDES to use this module")
@@ -42,10 +42,10 @@ defineModule(sim, list(
 ))
 
 ## event types
-doEvent.randomLandscapes <- function(sim, eventTime, eventType, debug = FALSE) {
+doEvent <- function(sim, eventTime, eventType, debug = FALSE) {
   if (eventType == "init") {
     # do stuff for this event
-    sim <- sim$randomLandscapesInit(sim)
+    sim <- sim$init(sim)
 
     # schedule the next events
     sim <- scheduleEvent(sim, P(sim)$.plotInitialTime, "randomLandscapes", "plot", .last())
@@ -70,7 +70,7 @@ doEvent.randomLandscapes <- function(sim, eventTime, eventType, debug = FALSE) {
 }
 
 ## event functions
-randomLandscapesInit <- function(sim) {
+init <- function(sim) {
   if (is.null(P(sim)$inRAM)) {
     inMemory <- FALSE
   } else {

@@ -51,7 +51,7 @@ library(igraph)
 library(raster)
 library(SpaDES)
 filelist <- data.frame(file = (system.file("maps", package = "SpaDES") %>%
-  dir(., full.names = TRUE, pattern = "tif"))[-c(2, 5) ])  # omit forestAge and percentPine for simplicity
+  dir(., full.names = TRUE, pattern = "tif"))[-c(2, 5)])  # omit forestAge and percentPine for simplicity
 print(filelist)
 # Load files to memory (using rasterToMemory), assign to a simList we call mySim 
 mySim <- loadFiles(filelist = filelist)

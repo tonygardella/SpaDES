@@ -153,6 +153,7 @@ setClass("simList",
 #' This is identical to class \code{simList}, except that the \code{.envir} slot
 #' is replaced by a \code{.list} containing a list to store the objects from the
 #' environment contained within the \code{simList}.
+#' Other environments contained in the \code{simList} are likewise converted.
 #' Saving/loading a list behaves more reliably than saving/loading an environment.
 #'
 #' @inheritParams .simList
@@ -173,15 +174,29 @@ setClass("simList_",
 
 setAs(from = "simList_", to = "simList", def = function(from) {
   x <- as(as(from, ".simList"), "simList")
-  #x@.envir <- as.environment(from@.list)
   x@.envir <- new.env(new.env(parent = emptyenv()))
-  list2env(from@.list, envir=x@.envir)
+  list2env(from@.list, envir = x@.envir)
+  mlist <- modules(from, hidden = TRUE) %>% `attributes<-`(., NULL)
+  lapply(mlist, function(m) {
+    if (!is.null(x@.envir[[m]])) {
+      x@.envir[[m]] <- new.env(new.env(parent = x@.envir))
+      x@.envir[[m]] <- list2env(from@.list[[m]], envir = x@.envir[[m]])
+    }
+  })
   return(x)
 })
 
 setAs(from = "simList", to = "simList_", def = function(from) {
   x <- as(as(from, ".simList"), "simList_")
-  x@.list <- as.list(envir(from))
+  allNames <- ls(from@.envir, all.names = TRUE)
+  x@.list <- lapply(allNames, function(ll) {
+    if (is.environment(from@.envir[[ll]])) {
+      as.list(from@.envir[[ll]])
+    } else {
+      from@.envir[[ll]]
+    }
+  })
+  names(x@.list) <- allNames
   return(x)
 })
 

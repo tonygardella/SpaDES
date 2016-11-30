@@ -93,7 +93,6 @@ doEvent.save <- function(sim, eventTime, eventType, debug = FALSE) {
 #' outputPath <- file.path(tempdir(), "test_save")
 #' times <- list(start = 0, end = 6, "month")
 #' parameters <- list(
-#'   .globals = list(stackName = "landscape"),
 #'   caribouMovement = list(
 #'     .saveObjects = "caribou",
 #'     .saveInitialTime = 1, .saveInterval = 1

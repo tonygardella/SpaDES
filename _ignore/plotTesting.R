@@ -6,7 +6,7 @@ clearPlot()
 library(stringi)
 times <- list(start = 0, end = 53, timeunit = "year")
 parameters <- list(
-  .globals = list(stackName = "landscape", burnStats = "burnStats"),
+  .globals = list(burnStats = "burnStats"),
   .progress = list(type = "graphical", interval = 1),
   randomLandscapes = list(.plotInitialTime = times$start),
   fireSpread = list(.plotInitialTime = times$start, startTime = times$start),
@@ -14,7 +14,6 @@ parameters <- list(
                          .plotInitialTime = times$start, .plotInterval = 1))
 modules <- list("fireSpread", "caribouMovement", "randomLandscapes")
 path <- list(modulePath = system.file("sampleModules", package = "SpaDES"))
-#path <- list(modulePath = "~/GitHub/SpaDES/inst/sampleModules")
 
 my <- simInit(times = times, params = parameters, modules = modules, path = path)
 system.time(spades(my))

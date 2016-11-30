@@ -7,7 +7,7 @@ test_that("test cache", {
   mySim <- simInit(
     times = list(start = 0.0, end = 1.0, timeunit = "year"),
     params = list(
-      .globals = list(stackName = "landscape", burnStats = "nPixelsBurned"),
+      .globals = list(burnStats = "nPixelsBurned"),
       # Turn off interactive plotting
       fireSpread = list(.plotInitialTime = NA),
       caribouMovement = list(.plotInitialTime = NA),
@@ -43,7 +43,7 @@ test_that("test event-level cache", {
   mySim <- simInit(
     times = list(start = 0.0, end = 1.0, timeunit = "year"),
     params = list(
-      .globals = list(stackName = "landscape", burnStats = "nPixelsBurned"),
+      .globals = list(burnStats = "nPixelsBurned"),
       # Turn off interactive plotting
       fireSpread = list(.plotInitialTime = NA),
       caribouMovement = list(.plotInitialTime = NA),
@@ -61,8 +61,8 @@ test_that("test event-level cache", {
   set.seed(1123)
   expect_true(!grepl(pattern = "Using cached copy of init event in randomLandscapes module",
                      capture_messages(sims <- spades(mySim, notOlderThan = Sys.time()))))
-  landscapeObjHash <- digest::digest(object = dropLayer(sims$landscape, "Fires"), algo="xxhash64")
-  firesHash <- digest::digest(object = sims$landscape$Fires, algo="xxhash64")
+  landscapeObjHash <- digest::digest(object = dropLayer(sims$landscape, "Fires"), algo = "xxhash64")
+  firesHash <- digest::digest(object = sims$landscape$Fires, algo = "xxhash64")
   expect_identical("290afe2cf904d4f5", landscapeObjHash)
   expect_true("4e6e705cb7e50920" %in% firesHash)
 
@@ -90,7 +90,7 @@ test_that("test module-level cache", {
   mySim <- simInit(
     times = times,
     params = list(
-      .globals = list(stackName = "landscape", burnStats = "nPixelsBurned"),
+      .globals = list(burnStats = "nPixelsBurned"),
       # Turn off interactive plotting
       fireSpread = list(.plotInitialTime = NA),
       caribouMovement = list(.plotInitialTime = NA),

@@ -10,7 +10,7 @@ test_that("experiment does not work correctly", {
   mySimFull <- simInit(
     times = list(start = 0.0, end = 2.0, timeunit = "year"),
     params = list(
-      .globals = list(stackName = "landscape", burnStats = "nPixelsBurned"),
+      .globals = list(burnStats = "nPixelsBurned"),
       # Turn off interactive plotting
       fireSpread = list(.plotInitialTime = NA),
       caribouMovement = list(.plotInitialTime = NA),
@@ -75,7 +75,6 @@ test_that("experiment does not work correctly", {
   mySimRL <- simInit(
     times = list(start = 0.0, end = 0.1, timeunit = "year"),
     params = list(
-      .globals = list(stackName = "landscape"),
       # Turn off interactive plotting
       randomLandscapes = list(.plotInitialTime = NA)
     ),
@@ -89,7 +88,7 @@ test_that("experiment does not work correctly", {
   mySimNoRL <- simInit(
     times = list(start = 0.0, end = 2.0, timeunit = "year"),
     params = list(
-      .globals = list(stackName = "landscape", burnStats = "nPixelsBurned"),
+      .globals = list(burnStats = "nPixelsBurned"),
       # Turn off interactive plotting
       fireSpread = list(.plotInitialTime = NA),
       caribouMovement = list(.plotInitialTime = NA)
@@ -102,6 +101,7 @@ test_that("experiment does not work correctly", {
   )
   landscapeFiles <- dir(outputPath(mySimRL), pattern = "landscape_year0", recursive = TRUE,
                         full.names = TRUE)
+
   set.seed(1232)
   sims <- experiment(mySimNoRL, replicates = 2,
                      inputs = lapply(landscapeFiles, function(filenames) {
@@ -121,7 +121,7 @@ test_that("experiment does not work correctly", {
   expect_false(identical(sims[[1]]$landscape$Fires, sims[[3]]$landscape$Fires))
 
   # Test clearSimEnv argument... i.e., clearing of the final objects
-  expect_equal(length(ls(sims[[1]])), 10)
+  expect_equal(length(ls(sims[[1]])), 5)
   set.seed(1232)
   sims2 <- experiment(mySimNoRL, replicates = 2, clearSimEnv = TRUE,
                       inputs = lapply(landscapeFiles, function(filenames) {
@@ -166,7 +166,7 @@ test_that("parallel does not work with experiment function", {
   mySimFull <- simInit(
     times = list(start = 0.0, end = 2.0, timeunit = "year"),
     params = list(
-      .globals = list(stackName = "landscape", burnStats = "nPixelsBurned"),
+      .globals = list(burnStats = "nPixelsBurned"),
       # Turn off interactive plotting
       fireSpread = list(.plotInitialTime = NA),
       caribouMovement = list(.plotInitialTime = NA),

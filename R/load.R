@@ -89,7 +89,7 @@ doEvent.load <- function(sim, eventTime, eventType, debug = FALSE) {
 #' @author Alex Chubaty
 #'
 #' @name loadFiles
-#' @include simulation.R
+#' @include simulation-simInit.R
 #' @importFrom data.table data.table rbindlist ':='
 #' @importFrom stringi stri_detect_fixed
 #' @importFrom raster inMemory
@@ -147,8 +147,6 @@ setMethod(
 
     # Pull .fileExtensions() into function so that scoping is faster
     .fileExts = .fileExtensions()
-    #usedIntervals <- FALSE # This is for a speed reason later on.
-    #Whether or not intervals for loading files are defined
 
     if (NROW(inputs(sim)) != 0) {
       inputs(sim) <- .fillInputRows(inputs(sim), start(sim))

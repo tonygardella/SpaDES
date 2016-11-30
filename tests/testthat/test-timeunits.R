@@ -1,7 +1,7 @@
 test_that("timeunit works correctly", {
   times <- list(start = 0.0, end = 10)
   params <- list(
-    .globals = list(burnStats = "npixelsburned", stackName = "landscape"),
+    .globals = list(burnStats = "npixelsburned"),
     randomLandscapes = list(.plotInitialTime = NA, .plotInterval = NA),
     caribouMovement = list(.plotInitialTime = NA, .plotInterval = NA),
     fireSpread = list(.plotInitialTime = NA, .plotInterval = NA)

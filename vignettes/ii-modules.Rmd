@@ -183,7 +183,7 @@ library(SpaDES)
 outputDir <- file.path(tempdir(), "simOutputs")
 times <- list(start = 0.0, end = 20.0)
 parameters <- list(
-  .globals = list(stackName = "landscape", burnStats = "nPixelsBurned"),
+  .globals = list(burnStats = "nPixelsBurned"),
   .progress = list(NA),
   randomLandscapes = list(nx = 100L, ny = 100L, inRAM = TRUE),
   fireSpread = list(
@@ -323,14 +323,14 @@ Note that only the start time of the event is meaningful is these figures: the w
 library(igraph) # for %>%
 library(SpaDES)
 parameters <- list(
-  .globals = list(stackName = "landscape", burnStats = "nPixelsBurned"),
+  .globals = list(burnStats = "nPixelsBurned"),
   .progress = list(NA),
-  randomLandscapes = list(nx = 100L, ny = 100L, inRAM = TRUE),
-  fireSpread = list(nFires = 10L, spreadprob = 0.225, its = 1e6,
-                    persistprob = 0, returnInterval = 1, startTime = 0,
+  randomLandscapes = list(stackName = "landscape", nx = 100L, ny = 100L, inRAM = TRUE),
+  fireSpread = list(stackName = "landscape",  nFires = 10L, spreadprob = 0.225,
+                    its = 1e6, persistprob = 0, returnInterval = 1, startTime = 0,
                     .plotInitialTime = 0, .plotInterval = 10),
-  caribouMovement = list(N = 100L, moveInterval = 1, torus = TRUE,
-                         .plotInitialTime = 1, .plotInterval = 1)
+  caribouMovement = list(stackName = "landscape", N = 100L, moveInterval = 1,
+                         torus = TRUE, .plotInitialTime = 1, .plotInterval = 1)
 )
 
 ftmp <- file.path(tempdir(), "spades_vignetteOutputs")
@@ -429,7 +429,7 @@ library(SpaDES)
 
 times <- list(start = 0.0, end = 20)
 parameters <- list(
-  .globals = list(stackName = "landscape", burnStats = "nPixelsBurned")
+  .globals = list(burnStats = "nPixelsBurned")
 )
 modules <- list("SpaDES_sampleModules")
 paths <- list(modulePath = system.file("sampleModules", package = "SpaDES"))
@@ -493,7 +493,6 @@ By befault, checkpointing is not used unless the `interval` parameter is provide
 # initialize a new simulation, setting the checkpoint interval and filename.
 times <- list(start = 0, end = 30)
 parameters <- list(
-  .globals = list(stackName = "landscape"),
   .checkpoint = list(interval = 10, file = "chkpnt.RData")
 )
 modules <- list("randomLandscapes", "caribouMovement")
@@ -515,8 +514,7 @@ Schedule updates to the simulation progress bar.
 ```{r progress, echo=TRUE, eval=TRUE, message=FALSE}
 # initialize a new simulation, setting the progress parameters
 mySim <- simInit(times = list(start = 0.0, end = 100.0),
-                 params = list(.globals = list(stackName = "landscape"),
-                               .progress = list(type = "text", interval = 10)),
+                 params = list(.progress = list(type = "text", interval = 10)),
                  modules = list("randomLandscapes"),
                  paths = list(modulePath = system.file("sampleModules", package = "SpaDES")))
 
@@ -591,7 +589,6 @@ library(data.table)
 outputDir <- file.path(tempdir(), "simOutputs")
 mySim <- simInit(times = list(start = 0.0, end = 10),
                  params = list(
-                   .globals = list(stackName = "landscape"),
                    randomLandscapes = list(
                      .saveInitialTime = 0, .saveInterval = 10,
                      .saveObjects = c("landscape"),
@@ -648,7 +645,6 @@ Plotting events can be scheduled similarly to save events, by passing module-spe
 # initialize a new simulation, setting the load and save parameters
 mySim <- simInit(times = list(start = 0.0, end = 100),
                  params = list(
-                   .globals = list(stackName = "landscape"),
                    randomLandscapes = list(.plotInitialTime = 0, .plotInterval = 1)
                  ),
                  modules = list("randomLandscapes"),
@@ -759,7 +755,7 @@ library(SpaDES)
 outputDir <- file.path(tempdir(), "simOutputs")
 times <- list(start = 0.0, end = 20.0)
 parameters <- list(
-  .globals = list(stackName = "landscape", burnStats = "nPixelsBurned"),
+  .globals = list(burnStats = "nPixelsBurned"),
   .progress = list(NA),
   randomLandscapes = list(nx = 100L, ny = 100L, inRAM = TRUE),
   fireSpread = list(

@@ -40,7 +40,7 @@ x <- moduleMetadata(sampleModules[3], path)
 mySim <- simInit(
    times = list(start = 2000.0, end = 2002.0, timeunit = "year"),
    params = list(
-     .globals = list(stackName = "landscape", burnStats = "nPixelsBurned")
+     .globals = list(burnStats = "nPixelsBurned")
    ),
    modules = list("randomLandscapes", "fireSpread", "caribouMovement"),
    paths = list(modulePath = system.file("sampleModules", package = "SpaDES"))
