@@ -117,7 +117,7 @@
 #' @examples
 #' \dontrun{
 #' mySim <- simInit(times = list(start = 0.0, end = 5.0),
-#'                  params = list(.globals = list(stackName = "landscape", burnStats = "testStats")),
+#'                  params = list(.globals = list(burnStats = "testStats")),
 #'                  modules = list("randomLandscapes", "fireSpread"),
 #'                  paths = list(modulePath = system.file("sampleModules", package = "SpaDES")))
 #'

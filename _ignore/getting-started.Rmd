@@ -30,7 +30,7 @@ library(SpaDES)
 
 times <- list(start = 0.0, end = 20.0)
 parameters <- list(
-  .globals = list(stackName = "landscape", burnStats = "nPixelsBurned"),
+  .globals = list(burnStats = "nPixelsBurned"),
   .progress = list(NA),
   randomLandscapes = list(nx = 100L, ny = 100L, inRAM = TRUE),
   fireSpread = list(nFires = 10L, spreadprob = 0.225, its = 1e6, persistprob = 0,
@@ -173,7 +173,7 @@ for (i in 1:nrow(paramsdf)) {
                 simInit(times = list(start = 0.0, end = 20.0),
                         params = list(
                           .progress = list(type = NA, interval = NA),
-                          .globals = list(stackName = "landscape", burnStats = "nPixelsBurned"),
+                          .globals = list(burnStats = "nPixelsBurned"),
                           randomLandscapes = list(nx = mapSize[i], ny = mapSize[i],
                                                 inRAM = TRUE),
                           fireSpread = list(nFires = 1000, spreadprob = pSpread[i],
@@ -254,7 +254,7 @@ mySim <- simInit(times = list(start = 0.0, end = 10),
                  params = list(
                    .load = list(fileList = fileList),
                    .progress = list(NA),
-                   .globals = list(stackName = "landscape", burnStats = "nPixelsBurned")
+                   .globals = list(burnStats = "nPixelsBurned")
                  ),
                  modules = list("fireSpread"),
                  path = system.file("sampleModules", package = "SpaDES"))

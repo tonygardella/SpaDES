@@ -105,7 +105,7 @@ See \url{https://github.com/PredictiveEcology/SpaDES/wiki/Debugging} for details
  mySim <- simInit(
    times = list(start = 0.0, end = 2.0, timeunit = "year"),
    params = list(
-     .globals = list(stackName = "landscape", burnStats = "nPixelsBurned")
+     .globals = list(burnStats = "nPixelsBurned")
    ),
    modules = list("randomLandscapes", "fireSpread", "caribouMovement"),
    paths = list(modulePath = system.file("sampleModules", package = "SpaDES"))
@@ -128,7 +128,7 @@ See \url{https://github.com/PredictiveEcology/SpaDES/wiki/Debugging} for details
    mySim <- simInit(
      times = list(start = 0.0, end = 2.0, timeunit = "year"),
      params = list(
-       .globals = list(stackName = "landscape", burnStats = "nPixelsBurned")
+       .globals = list(burnStats = "nPixelsBurned")
      ),
      modules = list("randomLandscapes", "fireSpread", "caribouMovement"),
      paths = list(modulePath = system.file("sampleModules", package = "SpaDES"))

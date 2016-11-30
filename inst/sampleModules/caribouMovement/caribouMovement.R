@@ -1,4 +1,4 @@
-usesSpaDESVersion <- "1.3.1.9015"
+usesSpaDESVersion <- "1.3.1.9016"
 if (packageVersion("SpaDES") < usesSpaDESVersion) {
   stop("This caribouMovement module was built with SpaDES version ", usesSpaDESVersion, ".",
        " Please update SpaDES to use this module.")
@@ -43,27 +43,25 @@ defineModule(sim, list(
 ))
 
 ## event types
-doEvent.caribouMovement <- function(sim, eventTime, eventType, debug = FALSE) {
+doEvent <- function(sim, eventTime, eventType, debug = FALSE) {
   if (eventType == "init") {
     ### check for more detailed object dependencies:
     ### (use `checkObject` or similar)
     checkObject(sim, name = P(sim)$stackName, layer = "habitatQuality")
 
     # do stuff for this event
-    sim <- sim$caribouMovementInit(sim)
+    sim <- sim$init(sim)
 
     # schedule the next event
-    sim <- scheduleEvent(sim, P(sim)$moveInitialTime,
-                         "caribouMovement", "move")
-    #sim <- scheduleEvent(sim, P(sim)$moveInitialTime,
-    #                     "caribouMovement", "move")
+    sim <- scheduleEvent(sim, P(sim)$moveInitialTime, "caribouMovement", "move")
+
     sim <- scheduleEvent(sim, P(sim)$.plotInitialTime,
                          "caribouMovement", "plot.init", .last())
     sim <- scheduleEvent(sim, P(sim)$.saveInitialTime,
                          "caribouMovement", "save", .last() + 1)
   } else if (eventType == "move") {
     # do stuff for this event
-    sim <- sim$caribouMovementMove(sim)
+    sim <- sim$caribouMove(sim)
 
     # schedule the next event
     sim <- scheduleEvent(sim, time(sim) + P(sim)$moveInterval,
@@ -98,18 +96,16 @@ doEvent.caribouMovement <- function(sim, eventTime, eventType, debug = FALSE) {
   } else {
     warning(paste(
       "Undefined event type: \'", events(sim)[1, "eventType", with = FALSE],
-      "\' in module \'", events(sim)[1,"moduleName", with = FALSE],"\'", sep = ""
+      "\' in module \'", events(sim)[1, "moduleName", with = FALSE], "\'", sep = ""
     ))
   }
   return(invisible(sim))
 }
 
 ## event functions
-caribouMovementInit <- function(sim) {
-  yrange <- c(ymin(sim[[P(sim)$stackName]]),
-              ymax(sim[[P(sim)$stackName]]))
-  xrange <- c(xmin(sim[[P(sim)$stackName]]),
-              xmax(sim[[P(sim)$stackName]]))
+init <- function(sim) {
+  yrange <- c(ymin(sim[[P(sim)$stackName]]), ymax(sim[[P(sim)$stackName]]))
+  xrange <- c(xmin(sim[[P(sim)$stackName]]), xmax(sim[[P(sim)$stackName]]))
 
   # initialize caribou agents
   N <- P(sim)$N
@@ -129,7 +125,7 @@ caribouMovementInit <- function(sim) {
   return(invisible(sim))
 }
 
-caribouMovementMove <- function(sim) {
+caribouMove <- function(sim) {
   # crop any caribou that went off maps
   sim$caribou <- crop(sim$caribou, sim[[P(sim)$stackName]])
   if (length(sim$caribou) == 0) stop("All agents are off map")

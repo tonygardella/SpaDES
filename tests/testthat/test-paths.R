@@ -1,6 +1,6 @@
 test_that("paths file does not work correctly", {
   times <- list(start = 0.0, end = 10)
-  params <- list(.globals = list(burnStats = "npixelsburned", stackName = "landscape"))
+  params <- list(.globals = list(burnStats = "npixelsburned"))
   modules <- list("randomLandscapes", "caribouMovement", "fireSpread")
 
   tempPath <- file.path(tempdir(), "test-paths") %>% checkPath(create = TRUE)

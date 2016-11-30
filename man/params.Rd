@@ -79,8 +79,7 @@ conflicts with a shiny app.
 \examples{
 modules = list("randomLandscapes")
 paths = list(modulePath = system.file("sampleModules", package = "SpaDES"))
-mySim <- simInit(modules = modules, paths = paths,
-                 params = list(.globals = list(stackName = "landscape")))
+mySim <- simInit(modules = modules, paths = paths)
 parameters(mySim)
 
 }

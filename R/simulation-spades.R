@@ -51,9 +51,9 @@ setMethod(
     # core modules
     core <- list("checkpoint", "save", "progress", "load")
 
-    cur <- sim@current #current(sim, "second")
-    if (NROW(cur) == 0) {# || any(is.na(cur))) {
-      evnts <- sim@events #events(sim, "second")
+    cur <- sim@current
+    if (NROW(cur) == 0) {
+      evnts <- sim@events
       # get next event from the queue and remove it from the queue
       if (NROW(evnts)) {
         sim@current <- evnts[1L, ]
@@ -66,8 +66,8 @@ setMethod(
 
     # catches the situation where no future event is scheduled,
     #  but stop time is not reached
-    cur <- sim@current #current(sim, "second")
-    if  (NROW(cur) == 0) {# (any(is.na(cur))) {
+    cur <- sim@current
+    if  (NROW(cur) == 0) {
       sim@simtimes[["current"]] <- sim@simtimes[["end"]] + 1
     } else {
       if (cur[["eventTime"]] <= sim@simtimes[["end"]]) {
@@ -75,9 +75,13 @@ setMethod(
         sim@simtimes[["current"]] <- cur[["eventTime"]]
 
         # call the module responsible for processing this event
-        moduleCall <- paste("doEvent", cur[["moduleName"]], sep = ".")
+        if (is.null(core[[cur[["moduleName"]]]])) {
+          moduleDoEvent <- sim@.envir[[cur[["moduleName"]]]][["doEvent"]]
+        } else {
+          moduleDoEvent <- get(paste0("doEvent.", cur[["moduleName"]]))
+        }
 
-        # Debug internally in the doEvent?
+        # debug internally in the doEvent  (e.g. the core modules)?
         debugDoEvent <- FALSE
 
         # check the module call for validity
@@ -87,10 +91,9 @@ setMethod(
               if (NROW(cur) > 0) {
                 evnts1 <- data.frame(current(sim))
                 widths <- str_length(format(evnts1))
-                sim@.envir[[".spadesDebugWidth"]] <-
-                  pmax(widths, sim@.envir[[".spadesDebugWidth"]])
-                evnts1[1L, ] <-
-                  str_pad(format(evnts1), side = "right", sim@.envir[[".spadesDebugWidth"]])
+                sim@.envir[[".spadesDebugWidth"]] <- pmax(widths,  sim@.envir[[".spadesDebugWidth"]])
+                evnts1[1L, ] <- str_pad(format(evnts1), side = "right",
+                                        sim@.envir[[".spadesDebugWidth"]])
 
                 if (sim@.envir[[".spadesDebugFirst"]]) {
                   evnts2 <- evnts1
@@ -111,8 +114,8 @@ setMethod(
               print(eval(parse(text = debug[[i]])))
             } else if (any(debug[[i]] == unlist(sim@modules))) {
               if (debug[[i]] == cur[["moduleName"]]) {
-                debugonce(get(paste0("doEvent.", cur[["moduleName"]]), envir = sim@.envir))
-                on.exit(get(paste0("doEvent.", cur[["moduleName"]]), envir = sim@.envir))
+                debugonce(moduleDoEvent)
+                on.exit(moduleDoEvent)
               }
             } else if (!any(debug[[i]] == c("step", "browser"))) {
               print(do.call(debug[[i]], list(sim)))
@@ -126,8 +129,7 @@ setMethod(
 
         if (cur[["moduleName"]] %in% sim@modules) {
           if (cur[["moduleName"]] %in% core) {
-            sim <- get(moduleCall)(sim, cur[["eventTime"]],
-                                   cur[["eventType"]], debugDoEvent)
+            sim <- get(paste0("doEvent.", cur[["moduleName"]]))(sim, cur[["eventTime"]], cur[["eventType"]], debugDoEvent)
           } else {
             # for future caching of modules
             cacheIt <- FALSE
@@ -158,18 +160,17 @@ setMethod(
               moduleSpecificObjects <- c(grep(ls(sim), pattern = cur[["moduleName"]], value = TRUE),
                                          na.omit(objNam))
               moduleSpecificOutputObjects <- objNam
-              sim <- Cache(FUN = get(moduleCall, envir = sim@.envir),
+              sim <- Cache(FUN = moduleDoEvent,
                            sim = sim,
-                           eventTime = cur[["eventTime"]], eventType = cur[["eventType"]],
+                           eventTime = cur[["eventTime"]],
+                           eventType = cur[["eventType"]],
                            debug = debugDoEvent,
                            objects = moduleSpecificObjects,
                            notOlderThan = notOlderThan,
                            outputObjects = moduleSpecificOutputObjects,
                            cacheRepo = sim@paths[["cachePath"]])
             } else {
-              sim <- get(moduleCall,
-                         envir = sim@.envir)(sim, cur[["eventTime"]],
-                                             cur[["eventType"]], debugDoEvent)
+              sim <- moduleDoEvent(sim, cur[["eventTime"]], cur[["eventType"]], debugDoEvent)
             }
           }
         } else {
@@ -183,7 +184,7 @@ setMethod(
         }
 
         # add to list of completed events
-        compl <- sim@completed # completed(sim, "second")
+        compl <- sim@completed
         if (NROW(compl)) {
           completed <- list(compl, cur) %>%
             rbindlist()
@@ -523,7 +524,7 @@ setMethod(
 #'  mySim <- simInit(
 #'    times = list(start = 0.0, end = 2.0, timeunit = "year"),
 #'    params = list(
-#'      .globals = list(stackName = "landscape", burnStats = "nPixelsBurned")
+#'      .globals = list(burnStats = "nPixelsBurned")
 #'    ),
 #'    modules = list("randomLandscapes", "fireSpread", "caribouMovement"),
 #'    paths = list(modulePath = system.file("sampleModules", package = "SpaDES"))
@@ -546,7 +547,7 @@ setMethod(
 #'    mySim <- simInit(
 #'      times = list(start = 0.0, end = 2.0, timeunit = "year"),
 #'      params = list(
-#'        .globals = list(stackName = "landscape", burnStats = "nPixelsBurned")
+#'        .globals = list(burnStats = "nPixelsBurned")
 #'      ),
 #'      modules = list("randomLandscapes", "fireSpread", "caribouMovement"),
 #'      paths = list(modulePath = system.file("sampleModules", package = "SpaDES"))

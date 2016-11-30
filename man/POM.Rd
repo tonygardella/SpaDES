@@ -190,7 +190,7 @@ if (interactive()) {
   mySim <- simInit(
     times = list(start = 0.0, end = 2.0, timeunit = "year"),
     params = list(
-      .globals = list(stackName = "landscape", burnStats = "nPixelsBurned"),
+      .globals = list(burnStats = "nPixelsBurned"),
       fireSpread = list(nFires = 5),
       randomLandscapes = list(nx = 300, ny = 300)
     ),

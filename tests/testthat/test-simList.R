@@ -2,7 +2,7 @@ test_that("simList object initializes correctly", {
   defaults <- list("checkpoint", "save", "progress", "load")
   times <- list(start = 0.0, end = 10)
   params <- list(
-    .globals = list(burnStats = "npixelsburned", stackName = "landscape")
+    .globals = list(burnStats = "npixelsburned")
   )
   modules <- list("randomLandscapes", "caribouMovement", "fireSpread")
   paths <- list(modulePath = system.file("sampleModules", package = "SpaDES"))
@@ -14,13 +14,13 @@ test_that("simList object initializes correctly", {
   w <- getOption("width")
   options(width = 100L)
   out <- utils::capture.output(show(mySim))
-  expect_equal(length(out), 81)
+  expect_equal(length(out), 74)
   options(width = w); rm(w)
 
   ### SLOT .envir
   expect_is(envir(mySim), "environment")
   expect_is(objs(mySim), "list")
-  expect_equal(sort(names(objs(mySim))),
+  expect_equal(sort(names(objs(mySim, all.names = TRUE))),
                sort(names(as(mySim, "simList_")@.list)))
   expect_equivalent(mySim, as(as(mySim, "simList_"), "simList"))
   expect_equal(ls(mySim), objects(mySim))

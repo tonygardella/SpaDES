@@ -17,7 +17,6 @@ test_that("test-load.R: loading inputs does not work correctly", {
 
   times <- list(start = 0, end = 1)
   parameters <- list(
-    .globals = list(stackName = "landscape"),
     caribouMovement = list(.plotInitialTime = NA),
     randomLandscapes = list(.plotInitialTime = NA, nx = 20, ny = 20)
   )
@@ -38,7 +37,7 @@ test_that("test-load.R: loading inputs does not work correctly", {
     functions = "raster",
     package = "raster",
     loadTime = c(0, 3),
-    stringsAsFactors=FALSE
+    stringsAsFactors = FALSE
   )
   inputs(mySim) <- inputs
   expect_equal(inputs(mySim)[,c("file", "fun", "package", "loadTime")], inputs)
@@ -125,7 +124,6 @@ test_that("test-load.R: passing arguments to filelist in simInit does not work c
   mapPath <- system.file("maps", package = "SpaDES")
   files <- dir(file.path(mapPath), full.names = TRUE, pattern =  "tif")[1:4]
   parameters <- list(
-    .globals = list(stackName = "landscape"),
     caribouMovement = list(.plotInitialTime = NA),
     randomLandscapes = list(.plotInitialTime = NA, nx = 20, ny = 20)
   )
@@ -202,7 +200,6 @@ test_that("test-load.R: passing objects to simInit does not work correctly", {
 
     times <- list(start = 0, end = 1)
     parameters <- list(
-      .globals = list(stackName = "landscape"),
       caribouMovement = list(.plotInitialTime = NA),
       randomLandscapes = list(.plotInitialTime = NA, nx = 20, ny = 20)
     )

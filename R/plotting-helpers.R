@@ -717,21 +717,14 @@ setMethod(
       )
     }
     if (grepl(deparse(parseTxt[[1]]), pattern = "^get")) {
-      callEnv <- tryCatch(
-        eval(
-          match.call(definition = eval,
-                     call = parseTxt)$envir,
-          envir = eminus1
-        ),
-        error = function(x) {
-          tryCatch(
-            eval(
-              match.call(definition = eval, call = parseTxt)$envir,
-              envir = e
-            ),
-            error = function(x) { .GlobalEnv }
-          )
-        }
+      callEnv <- tryCatch(eval(
+          match.call(definition = eval, call = parseTxt)$envir, envir = eminus1),
+          error = function(x) {
+            tryCatch(eval(
+                match.call(definition = eval, call = parseTxt)$envir, envir = e),
+                error = function(x) { .GlobalEnv }
+            )
+          }
       )
       parseTxt[[3]] <- match.call(definition = get, call = parseTxt)$x
       tmpParseTxt3 <- tryCatch(

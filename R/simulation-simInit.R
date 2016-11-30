@@ -3,6 +3,62 @@ if (getRversion() >= "3.1.0") {
 }
 
 ################################################################################
+#' Find all input and output object names, and update the internal list
+#'
+#' Used to track the names of shared data dependencies in a simulation.
+#'
+#' This is faster than accessing the \code{.moduleDeps} object on demand.
+#'
+#' @param sim  A \code{simList} object.
+#'
+#' @author Alex Chubaty
+#' @docType methods
+#' @include module-dependencies-class.R
+#' @keywords internal
+#' @rdname findAllObjNames
+#'
+setGeneric(".findAllObjNames",
+           function(sim) {
+  standardGeneric(".findAllObjNames")
+})
+
+#' @rdname findAllObjNames
+setMethod(
+  ".findAllObjNames",
+  signature = "simList",
+  definition = function(sim) {
+    namesAll <- list()
+
+    ## get object names from modules
+    namesAll <- lapply(sim@depends@dependencies, function(m) {
+      if (!is.null(m)) {
+        x <- m@inputObjects$objectName
+        lapply(x, function(n) {
+          namesAll[[n]] <<- na.omit(n)
+        })
+
+        y <- m@outputObjects$objectName
+        lapply(y, function(n) {
+          namesAll[[n]] <<- na.omit(n)
+        })
+      }
+    }) %>%
+      ## append object names loaded by user via e.g., filelist
+      append(sim@inputs$objectName) %>%
+      append(sim@outputs$objectName) %>%
+      ## simplify the list && remove duplicates
+      unlist() %>%
+      unique()
+
+    ## store names to .allObjNames
+    names(namesAll) <- namesAll
+    namesAll <- as.list(namesAll)
+    sim@depends@.allObjNames <- namesAll
+
+    return(sim)
+})
+
+################################################################################
 #' Initialize a new simulation
 #'
 #' Create a new simulation object, the "sim" object. This object is implemented
@@ -123,7 +179,7 @@ if (getRversion() >= "3.1.0") {
 #'  mySim <- simInit(
 #'    times = list(start = 0.0, end = 2.0, timeunit = "year"),
 #'    params = list(
-#'      .globals = list(stackName = "landscape", burnStats = "nPixelsBurned")
+#'      .globals = list(burnStats = "nPixelsBurned")
 #'    ),
 #'    modules = list("randomLandscapes", "fireSpread", "caribouMovement"),
 #'    paths = list(modulePath = system.file("sampleModules", package = "SpaDES"))
@@ -135,7 +191,7 @@ if (getRversion() >= "3.1.0") {
 #'  mySim <- simInit(
 #'    times = list(start = 0.0, end = 2.0, timeunit = "year"),
 #'    params = list(
-#'      .globals = list(stackName = "landscape", burnStats = "nPixelsBurned"),
+#'      .globals = list(burnStats = "nPixelsBurned"),
 #'      fireSpread = list(.plotInitialTime=wantPlotting),
 #'      #caribouMovement = list(.plotInitialTime=wantPlotting),
 #'      #randomLandscapes = list(.plotInitialTime=wantPlotting)
@@ -151,7 +207,7 @@ if (getRversion() >= "3.1.0") {
 #'    mySim <- simInit(
 #'      times = list(start = 0.0, end = 2.0, timeunit = "year"),
 #'      params = list(
-#'        .globals = list(stackName = "landscape", burnStats = "nPixelsBurned")
+#'        .globals = list(burnStats = "nPixelsBurned")
 #'      ),
 #'      modules = list("randomLandscapes", "fireSpread", "caribouMovement"),
 #'      paths = list(modulePath = system.file("sampleModules", package = "SpaDES"),
@@ -171,8 +227,7 @@ if (getRversion() >= "3.1.0") {
 #'    # Use accessors for inputs, outputs, times
 #'    mySim2 <- simInit(modules = list("randomLandscapes", "fireSpread",
 #'                                     "caribouMovement"),
-#'                      params = list(.globals = list(stackName = "landscape",
-#'                                                    burnStats = "nPixelsBurned")),
+#'                      params = list(.globals = list(burnStats = "nPixelsBurned")),
 #'                      paths = list(modulePath = system.file("sampleModules",
 #'                                                            package = "SpaDES"),
 #'                                   outputPath = tempdir()))
@@ -408,8 +463,7 @@ setMethod(
     # load user-defined modules
     for (m in loadOrder) {
       # schedule each module's init event:
-      sim <-
-        scheduleEvent(sim, sim@simtimes[["start"]], m, "init", .normal())
+      sim <- scheduleEvent(sim, sim@simtimes[["start"]], m, "init", .normal())
 
       ### add module name to the loaded list
       modulesLoaded <- append(modulesLoaded, m)
@@ -454,9 +508,8 @@ setMethod(
         } else {
           stop(
             paste(
-              "objects must be a character vector of object names",
-              "to retrieve from the .GlobalEnv, or a named list of",
-              "objects"
+              "objects must be a character vector of object names to retrieve",
+              "from the .GlobalEnv, or a named list of objects."
             )
           )
         }
@@ -472,7 +525,7 @@ setMethod(
     }
 
     # load files in the filelist
-    if (NROW(inputs) | NROW(inputs(sim))) {
+    if (NROW(inputs) || NROW(inputs(sim))) {
       inputs(sim) <- rbind(inputs(sim), inputs)
       if (NROW(sim@events[moduleName == "load" &
                            eventType == "inputs" &
@@ -500,6 +553,9 @@ setMethod(
     if (length(outputs)) {
       outputs(sim) <- outputs
     }
+
+    # rebuild the list of shared data object names
+    sim <- .findAllObjNames(sim)
 
     # check the parameters supplied by the user
     checkParams(sim, core, dotParams, sim@paths[['modulePath']])

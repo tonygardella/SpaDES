@@ -11,7 +11,6 @@ test_that("test checkpointing", {
   set.seed(1234)
   times <- list(start = 0, end = 2, timeunit = "second")
   parameters <- list(
-    .globals = list(stackName = "landscape"),
     .checkpoint = list(interval = 1, file = file),
     randomLandscapes = list(.plotInitialTime = NA),
     caribouMovement = list(.plotInitialTime = NA, torus = TRUE)
@@ -39,5 +38,7 @@ test_that("test checkpointing", {
   simB <- spades(simB)
 
   ## both versions above should yield identical results
-  expect_true(all.equal(as(simA, "simList_"), as(simB, "simList_")))
+  simA_ <- as(simA, "simList_")
+  simB_ <- as(simB, "simList_")
+  expect_true(all.equal(simA_, simB_))
 })

@@ -129,7 +129,7 @@ are all needed for initialization.
  mySim <- simInit(
    times = list(start = 0.0, end = 2.0, timeunit = "year"),
    params = list(
-     .globals = list(stackName = "landscape", burnStats = "nPixelsBurned")
+     .globals = list(burnStats = "nPixelsBurned")
    ),
    modules = list("randomLandscapes", "fireSpread", "caribouMovement"),
    paths = list(modulePath = system.file("sampleModules", package = "SpaDES"))
@@ -141,7 +141,7 @@ are all needed for initialization.
  mySim <- simInit(
    times = list(start = 0.0, end = 2.0, timeunit = "year"),
    params = list(
-     .globals = list(stackName = "landscape", burnStats = "nPixelsBurned"),
+     .globals = list(burnStats = "nPixelsBurned"),
      fireSpread = list(.plotInitialTime=wantPlotting),
      #caribouMovement = list(.plotInitialTime=wantPlotting),
      #randomLandscapes = list(.plotInitialTime=wantPlotting)
@@ -157,7 +157,7 @@ if (require(rgdal)) {
    mySim <- simInit(
      times = list(start = 0.0, end = 2.0, timeunit = "year"),
      params = list(
-       .globals = list(stackName = "landscape", burnStats = "nPixelsBurned")
+       .globals = list(burnStats = "nPixelsBurned")
      ),
      modules = list("randomLandscapes", "fireSpread", "caribouMovement"),
      paths = list(modulePath = system.file("sampleModules", package = "SpaDES"),
@@ -177,8 +177,7 @@ if (require(rgdal)) {
    # Use accessors for inputs, outputs, times
    mySim2 <- simInit(modules = list("randomLandscapes", "fireSpread",
                                     "caribouMovement"),
-                     params = list(.globals = list(stackName = "landscape",
-                                                   burnStats = "nPixelsBurned")),
+                     params = list(.globals = list(burnStats = "nPixelsBurned")),
                      paths = list(modulePath = system.file("sampleModules",
                                                            package = "SpaDES"),
                                   outputPath = tempdir()))

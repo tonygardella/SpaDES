@@ -17,15 +17,13 @@ if (require(rgdal, quietly = TRUE)) {
     stringsAsFactors = FALSE
   )
 
-  stackName = "landscape"
-
   mySim <- simInit(
     times = list(start = 0.0, end = 100.00),
     params = list(
       .progress = list(type = "graphical", interval = 10),
-      .globals = list(stackName = stackName, burnStats = "nPixelsBurned"),
+      .globals = list(burnStats = "nPixelsBurned"),
       randomLandscapes = list(
-        nx = 1e2, ny = 1e2, .saveObjects = stackName,
+        nx = 1e2, ny = 1e2, .saveObjects = "landscape",
         .plotInitialTime = NA, .plotInterval = NA, inRAM = TRUE
       ),
       caribouMovement = list(

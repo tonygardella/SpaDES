@@ -1,4 +1,4 @@
-usesSpaDESVersion <- "1.3.1.9015"
+usesSpaDESVersion <- "1.3.1.9016"
 if (packageVersion("SpaDES") < usesSpaDESVersion) {
   stop("This fireSpread module was built with SpaDES version", usesSpaDESVersion,
        "Please update SpaDES to use this module")
@@ -50,7 +50,7 @@ defineModule(sim, list(
 ))
 
 ## event types
-doEvent.fireSpread <- function(sim, eventTime, eventType, debug = FALSE) {
+doEvent <- function(sim, eventTime, eventType, debug = FALSE) {
   if (eventType == "init") {
     ### check for more object dependencies:
     ### (use `checkObject` or similar)
@@ -64,23 +64,22 @@ doEvent.fireSpread <- function(sim, eventTime, eventType, debug = FALSE) {
     }
 
     # do stuff for this event
-    sim <- sim$fireSpreadInit(sim)
+    sim <- sim$init(sim)
 
     # schedule the next events
     sim <- scheduleEvent(sim, P(sim)$startTime, "fireSpread", "burn")
     sim <- scheduleEvent(sim, P(sim)$.saveInterval, "fireSpread", "save", .last())
     sim <- scheduleEvent(sim, P(sim)$.plotInitialTime, "fireSpread", "plot.init", .last())
-
   } else if (eventType == "burn") {
     # do stuff for this event
-    sim <- sim$fireSpreadBurn(sim)
+    sim <- sim$burn(sim)
 
     # schedule the next events
     sim <- scheduleEvent(sim, time(sim), "fireSpread", "stats") # do stats immediately following burn
     sim <- scheduleEvent(sim, time(sim) + P(sim)$returnInterval, "fireSpread", "burn")
   } else if (eventType == "stats") {
     # do stuff for this event
-    sim <- sim$fireSpreadStats(sim)
+    sim <- sim$stats(sim)
 
     # schedule the next event
     ## stats scheduling done by burn event
@@ -127,7 +126,7 @@ doEvent.fireSpread <- function(sim, eventTime, eventType, debug = FALSE) {
 }
 
 ## event functions
-fireSpreadInit <- function(sim) {
+init <- function(sim) {
   landscapes <- sim[[P(sim)$stackName]]
 
   ### create burn map that tracks fire locations over time
@@ -144,7 +143,7 @@ fireSpreadInit <- function(sim) {
   return(invisible(sim))
 }
 
-fireSpreadBurn <- function(sim) {
+burn <- function(sim) {
   landscapes <- sim[[P(sim)$stackName]]
 
   Fires <- spread(landscapes[[1]],
@@ -160,13 +159,12 @@ fireSpreadBurn <- function(sim) {
   names(Fires) <- "Fires"
   setColors(Fires) <- c("white", rev(heat.colors(9)))
   landscapes$Fires <- Fires
-
   sim[[P(sim)$stackName]] <- landscapes
 
   return(invisible(sim))
 }
 
-fireSpreadStats <- function(sim) {
+stats <- function(sim) {
   npix <- sim[[globals(sim)$burnStats]]
 
   landscapes <- sim[[P(sim)$stackName]]

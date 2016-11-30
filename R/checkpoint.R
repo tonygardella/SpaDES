@@ -35,7 +35,7 @@
 #' @docType methods
 #' @rdname checkpoint
 #'
-doEvent.checkpoint = function(sim, eventTime, eventType, debug = FALSE) {
+doEvent.checkpoint <- function(sim, eventTime, eventType, debug = FALSE) {
   ### determine whether to use checkpointing
   ### default is not to use checkpointing if unspecified
   ### - this default is set when a new simList object is initialized
@@ -97,7 +97,7 @@ checkpointLoad <- function(file) {
 
     do.call("RNGkind", as.list(sim$.rng.kind))
     assign(".Random.seed", sim$.rng.state, envir = .GlobalEnv)
-    rm(list = c(".rng.kind", ".rng.state", ".timestamp"), envir = sim@.envir)
+    rm(list = c(".rng.kind", ".rng.state", ".timestamp"), envir = sim@.envir$checkpoint)
     return(invisible(TRUE))
   } else {
     return(invisible(FALSE))
@@ -106,6 +106,7 @@ checkpointLoad <- function(file) {
 
 #' @rdname checkpoint
 .checkpointSave <- function(sim, file) {
+  sim@.envir$checkpoint <- new.env(parent = sim@.envir)
   sim$.timestamp <- Sys.time()
   sim$.rng.state <- get(".Random.seed", envir = .GlobalEnv)
   sim$.rng.kind <- RNGkind()

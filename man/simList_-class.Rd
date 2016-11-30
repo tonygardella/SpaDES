@@ -12,6 +12,7 @@ Internal use only. Used when saving/loading a \code{simList}.
 This is identical to class \code{simList}, except that the \code{.envir} slot
 is replaced by a \code{.list} containing a list to store the objects from the
 environment contained within the \code{simList}.
+Other environments contained in the \code{simList} are likewise converted.
 Saving/loading a list behaves more reliably than saving/loading an environment.
 }
 \author{

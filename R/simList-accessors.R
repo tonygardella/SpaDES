@@ -36,10 +36,9 @@ setMethod(
 
     ### modules loaded
     out[[8]] <- capture.output(cat(">> Modules:\n"))
-    ord <- match(unlist(modules(object)), names(timeunits(object))) %>% na.omit
+    ord <- match(unlist(modules(object)), names(timeunits(object))) %>% na.omit()
     out[[9]] <- capture.output(print(
       cbind(Name = modules(object),
-            #Timeunit = c(rep(NA_character_, 4), unname(timeunits(object))[ord])),
             Timeunit = unname(timeunits(object))[ord]),
       quote = FALSE, row.names = FALSE))
     out[[10]] <- capture.output(cat("\n"))
@@ -270,14 +269,15 @@ setGeneric("objs", function(sim, ...) {
 
 #' @export
 #' @rdname objects
-setMethod("objs",
-          signature = "simList",
-          definition = function(sim, ...) {
-            w <- lapply(ls(sim@.envir, ...), function(z) {
-              eval(parse(text = z), envir = sim@.envir)
-            })
-            names(w) <- ls(sim@.envir, ...)
-            return(w)
+setMethod(
+  "objs",
+  signature = "simList",
+  definition = function(sim, ...) {
+    w <- lapply(ls(sim@.envir, ...), function(z) {
+      eval(parse(text = z), envir = sim@.envir)
+    })
+    names(w) <- ls(sim@.envir, ...)
+    return(w)
 })
 
 #' @export
@@ -296,17 +296,15 @@ setReplaceMethod(
   signature = "simList",
   function(sim, value) {
     if (is.list(value)) {
-     list2env(value, envir = sim@.envir)
-     newInputs <- data.frame(
-       objectName = names(value),
-       loadTime = as.numeric(sim@simtimes[["current"]]),
-       loaded = TRUE,
-       stringsAsFactors = FALSE) %>% .fillInputRows(startTime = start(sim))
-     inputs(sim) <- rbind(inputs(sim), newInputs)
-
-    # lapply(names(value), function(z) {
-    #   sim@.envir[[z]] <- value[[z]]
-    # })
+      list2env(value, envir = sim@.envir)
+      newInputs <- data.frame(
+        objectName = names(value),
+        loadTime = as.numeric(sim@simtimes[["current"]]),
+        loaded = TRUE,
+        stringsAsFactors = FALSE
+      ) %>%
+        .fillInputRows(startTime = start(sim))
+      inputs(sim) <- rbind(inputs(sim), newInputs)
     } else {
      stop("must provide a named list.")
     }
@@ -323,9 +321,16 @@ setReplaceMethod(
 #' @aliases simList-accessors-objects
 #' @docType methods
 #' @rdname objects
-setMethod("[[", signature(x = "simList", i = "ANY", j = "ANY"),
-          definition = function(x, i, j, ..., drop) {
-            return(x@.envir[[i]])
+setMethod(
+  "[[",
+  signature(x = "simList", i = "ANY", j = "ANY"),
+  definition = function(x, i, j, ..., drop) {
+    module <- x@current[["moduleName"]]
+    if ( (length(module) > 0) && is.null(x@depends@.allObjNames[[i]]) ) {
+      return(x@.envir[[module]][[i]])
+    } else {
+      return(x@.envir[[i]])
+    }
 })
 
 #' @export
@@ -333,10 +338,17 @@ setMethod("[[", signature(x = "simList", i = "ANY", j = "ANY"),
 #' @aliases [[<-,simList,ANY,ANY,ANY-method
 #' @aliases simList-accessors-objects
 #' @rdname objects
-setReplaceMethod("[[", signature(x = "simList", value = "ANY"),
-                 definition = function(x, i, value) {
-                   assign(i, value, envir = x@.envir, inherits = FALSE)
-                   return(x)
+setReplaceMethod(
+  "[[",
+  signature(x = "simList", value = "ANY"),
+  definition = function(x, i, value) {
+    module <- x@current[["moduleName"]]
+    if ( (length(module) > 0) && is.null(x@depends@.allObjNames[[i]]) ) {
+        assign(i, value, envir = x@.envir[[module]], inherits = FALSE)
+    } else {
+      assign(i, value, envir = x@.envir, inherits = FALSE)
+    }
+    return(x)
 })
 
 #' @export
@@ -344,9 +356,16 @@ setReplaceMethod("[[", signature(x = "simList", value = "ANY"),
 #' @aliases $,simList-method
 #' @aliases simList-accessors-objects
 #' @rdname objects
-setMethod("$", signature(x = "simList"),
-          definition = function(x, name) {
-            return(x@.envir[[name]])
+setMethod(
+  "$",
+  signature(x = "simList"),
+  definition = function(x, name) {
+    module <- x@current[["moduleName"]]
+    if ( (length(module) > 0) && is.null(x@depends@.allObjNames[[name]]) ) {
+      return(x@.envir[[module]][[name]])
+    } else {
+      return(x@.envir[[name]])
+    }
 })
 
 #' @export
@@ -354,10 +373,17 @@ setMethod("$", signature(x = "simList"),
 #' @aliases $<-,simList-method
 #' @aliases simList-accessors-objects
 #' @rdname objects
-setReplaceMethod("$", signature(x = "simList", value = "ANY"),
-                 definition = function(x, name, value) {
-                   x@.envir[[name]] <- value
-                   return(x)
+setReplaceMethod(
+  "$",
+  signature(x = "simList", value = "ANY"),
+  definition = function(x, name, value) {
+    module <- x@current[["moduleName"]]
+    if ( (length(module) > 0) && is.null(x@depends@.allObjNames[[name]]) ) {
+      x@.envir[[module]][[name]] <- value
+    } else {
+      x@.envir[[name]] <- value
+    }
+    return(x)
 })
 
 ################################################################################
@@ -709,8 +735,7 @@ setReplaceMethod("globals",
 #' @examples
 #' modules = list("randomLandscapes")
 #' paths = list(modulePath = system.file("sampleModules", package = "SpaDES"))
-#' mySim <- simInit(modules = modules, paths = paths,
-#'                  params = list(.globals = list(stackName = "landscape")))
+#' mySim <- simInit(modules = modules, paths = paths)
 #' parameters(mySim)
 #'
 setGeneric("parameters", function(sim, asDF = FALSE) {
@@ -1113,66 +1138,64 @@ setReplaceMethod(
   "inputs",
   signature = ".simList",
   function(sim, value) {
-   if (length(value) > 0) {
-     whFactors <- sapply(value, function(x) is.factor(x))
-     if (any(whFactors)) {
-       value[,whFactors] <- sapply(value[,whFactors], as.character)
-     }
+    if (length(value) > 0) {
+      whFactors <- sapply(value, function(x) is.factor(x))
+      if (any(whFactors)) {
+        value[, whFactors] <- sapply(value[,whFactors], as.character)
+      }
 
-     if (!is.data.frame(value)) {
-       if (!is.list(value)) {
-         stop("inputs must be a list, data.frame")
-       }
+      if (!is.data.frame(value)) {
+        if (!is.list(value)) stop("inputs must be a list, data.frame")
         value <- data.frame(value, stringsAsFactors = FALSE)
-     }
-     sim@inputs <- .fillInputRows(value, start(sim))
-   } else {
-     sim@inputs <- value
-   }
-   # Deal with objects and files differently... if files (via inputs arg in simInit)...
-     # Deal with file names
-     # 2 things: 1. if relative, concatenate inputPath
-     #           2. if absolute, don't use inputPath
-   if (NROW(value) > 0) {
-     sim@inputs[is.na(sim@inputs$file), "file"] <- NA
+      }
+      sim@inputs <- .fillInputRows(value, start(sim))
+    } else {
+      sim@inputs <- value
+    }
+    # Deal with objects and files differently... if files (via inputs arg in simInit)...
+    # Deal with file names
+    # 2 things: 1. if relative, concatenate inputPath
+    #           2. if absolute, don't use inputPath
+    if (NROW(value) > 0) {
+      sim@inputs[is.na(sim@inputs$file), "file"] <- NA
 
-     # If a filename is provided, determine if it is absolute path, if so,
-     # use that, if not, then append it to inputPath(sim)
-     ids <- (!isAbsolutePath(sim@inputs$file) & !is.na(sim@inputs$file))
-     sim@inputs[ids, "file"] <- file.path(inputPath(sim), sim@inputs$file[ids])
+      # If a filename is provided, determine if it is absolute path, if so,
+      # use that, if not, then append it to inputPath(sim)
+      ids <- (!isAbsolutePath(sim@inputs$file) & !is.na(sim@inputs$file))
+      sim@inputs[ids, "file"] <- file.path(inputPath(sim), sim@inputs$file[ids])
 
-     if (!all(names(sim@inputs) %in% .fileTableInCols)) {
-       stop(paste("input table can only have columns named",
-                  paste(.fileTableInCols, collapse = ", ")))
-     }
-     if (any(is.na(sim@inputs[, "loaded"]))) {
-       if (!all(is.na(sim@inputs[, "loadTime"]))) {
-         newTime <- sim@inputs[is.na(sim@inputs$loaded), "loadTime"]
-         attributes(newTime)$unit <- sim@simtimes[["timeunit"]]
-         for (nT in newTime) {
-           attributes(nT)$unit <- timeunit(sim)
-           sim <- scheduleEvent(sim, nT, "load", "inputs", .first())
-         }
-         toRemove <- duplicated(rbindlist(list(current(sim), events(sim))),
-                                by = c("eventTime", "moduleName", "eventType"))
-         if (any(toRemove)) {
-           if (NROW(current(sim)) > 0)
-             toRemove <- toRemove[-seq_len(NROW(current(sim)))]
-           events(sim) <- events(sim)[!toRemove]
-         }
+      if (!all(names(sim@inputs) %in% .fileTableInCols)) {
+        stop(paste("input table can only have columns named",
+                   paste(.fileTableInCols, collapse = ", ")))
+      }
+      if (any(is.na(sim@inputs[, "loaded"]))) {
+        if (!all(is.na(sim@inputs[, "loadTime"]))) {
+          newTime <- sim@inputs[is.na(sim@inputs$loaded), "loadTime"]
+          attributes(newTime)$unit <- sim@simtimes[["timeunit"]]
+          for (nT in newTime) {
+            attributes(nT)$unit <- timeunit(sim)
+            sim <- scheduleEvent(sim, nT, "load", "inputs", .first())
+          }
+          toRemove <- duplicated(rbindlist(list(current(sim), events(sim))),
+                                 by = c("eventTime", "moduleName", "eventType"))
+          if (any(toRemove)) {
+            if (NROW(current(sim)) > 0)
+              toRemove <- toRemove[-seq_len(NROW(current(sim)))]
+            events(sim) <- events(sim)[!toRemove]
+          }
+        } else {
+          sim@inputs[is.na(sim@inputs$loadTime), "loadTime"] <- sim@simtimes[["current"]]
+          newTime <- sim@inputs[is.na(sim@inputs$loaded), "loadTime"] %>%
+            min(., na.rm = TRUE)
+          attributes(newTime)$unit <- "seconds"
+          sim <- scheduleEvent(sim, newTime, "load", "inputs", .first())
+        }
+      }
+    }
 
-       } else {
-         sim@inputs[is.na(sim@inputs$loadTime), "loadTime"] <-
-           sim@simtimes[["current"]]
-         newTime <- sim@inputs[is.na(sim@inputs$loaded), "loadTime"] %>%
-           min(., na.rm = TRUE)
-         attributes(newTime)$unit <- "seconds"
-         sim <- scheduleEvent(sim, newTime, "load", "inputs", .first())
-       }
-     }
-   }
-
-   return(sim)
+    sim <- .findAllObjNames(sim)
+    validObject(sim, complete = TRUE)
+    return(sim)
 })
 
 ################################################################################
@@ -1350,75 +1373,74 @@ setReplaceMethod(
   signature = ".simList",
   function(sim, value) {
     if (NROW(value)) {
-       if (!is.data.frame(value)) {
-         if (!is.list(value)) {
-           stop("outputs must be a list or data.frame")
-         }
-         value <- data.frame(value, stringsAsFactors = FALSE)
-       }
+      if (!is.data.frame(value)) {
+        if (!is.list(value)) stop("outputs must be a list or data.frame")
+        value <- data.frame(value, stringsAsFactors = FALSE)
+      }
 
-       sim@outputs <- .fillOutputRows(value, end(sim))
+      sim@outputs <- .fillOutputRows(value, end(sim))
 
-       # coerce any factors to the correct class
-       for (col in which(sapply(sim@outputs, is.factor))) {
-         sim@outputs[, col] <- as(sim@outputs[[col]], class(.fileTableOut()[[col]]))
-       }
+      # coerce any factors to the correct class
+      for (col in which(sapply(sim@outputs, is.factor))) {
+        sim@outputs[, col] <- as(sim@outputs[[col]], class(.fileTableOut()[[col]]))
+      }
 
-       # if saveTime not provided, give it end(sim)
-       sim@outputs[is.na(sim@outputs$saveTime), "saveTime"] <-
-         end(sim, sim@simtimes[["timeunit"]])
-       attributes(sim@outputs$saveTime)$unit <- sim@simtimes[["timeunit"]]
+      # if saveTime not provided, give it end(sim)
+      sim@outputs[is.na(sim@outputs$saveTime), "saveTime"] <-
+        end(sim, sim@simtimes[["timeunit"]])
+      attributes(sim@outputs$saveTime)$unit <- sim@simtimes[["timeunit"]]
 
-       # Deal with file names
-       # 3 things: 1. if relative, concatenate outputPath
-       #           2. if absolute, don't use outputPath
-       #           3. concatenate time to file name in all cases
-       # If no filename provided, use the object name
-       sim@outputs[is.na(sim@outputs$file), "file"] <-
-         paste0(sim@outputs$objectName[is.na(sim@outputs$file)])
-       # If a filename is provided, determine if it is absolute path, if so,
-       # use that, if not, then append it to outputPath(sim)
-       sim@outputs[!isAbsolutePath(sim@outputs$file), "file"] <-
-         file.path(outputPath(sim),
-                   sim@outputs$file[!isAbsolutePath(sim@outputs$file)])
+      # Deal with file names
+      # 3 things: 1. if relative, concatenate outputPath
+      #           2. if absolute, don't use outputPath
+      #           3. concatenate time to file name in all cases
+      # If no filename provided, use the object name
+      sim@outputs[is.na(sim@outputs$file), "file"] <-
+        paste0(sim@outputs$objectName[is.na(sim@outputs$file)])
+      # If a filename is provided, determine if it is absolute path, if so,
+      # use that, if not, then append it to outputPath(sim)
+      sim@outputs[!isAbsolutePath(sim@outputs$file), "file"] <-
+        file.path(outputPath(sim),
+                  sim@outputs$file[!isAbsolutePath(sim@outputs$file)])
 
-       # If there is no function provided, then use saveRDS, from package base
-       sim@outputs[is.na(sim@outputs$fun), "fun"] <- "saveRDS"
-       sim@outputs[is.na(sim@outputs$package), "package"] <- "base"
+      # If there is no function provided, then use saveRDS, from package base
+      sim@outputs[is.na(sim@outputs$fun), "fun"] <- "saveRDS"
+      sim@outputs[is.na(sim@outputs$package), "package"] <- "base"
 
-       # file extension stuff
-       fileExts <- .saveFileExtensions()
-       fe <- suppressMessages(inner_join(sim@outputs, fileExts)$exts)
-       wh <- !stri_detect_fixed(str = sim@outputs$file, pattern = ".") &
-         (nchar(fe) > 0)
-       sim@outputs[wh, "file"] <- paste0(sim@outputs[wh, "file"], ".", fe[wh])
+      # file extension stuff
+      fileExts <- .saveFileExtensions()
+      fe <- suppressMessages(inner_join(sim@outputs, fileExts)$exts)
+      wh <- !stri_detect_fixed(str = sim@outputs$file, pattern = ".") &
+        (nchar(fe) > 0)
+      sim@outputs[wh, "file"] <- paste0(sim@outputs[wh, "file"], ".", fe[wh])
 
-       # If the file name already has a time unit on it,
-       # i.e., passed explicitly by user, then don't postpend again
-       txtTimeA <- paste0(attr(sim@outputs[, "saveTime"], "unit"))
-       txtTimeB <- paddedFloatToChar(
-         sim@outputs[, "saveTime"],
-         ceiling(log10(end(sim, sim@simtimes[["timeunit"]]) + 1))
-       )
-       # Add time unit and saveTime to filename, without stripping extension
-       wh <- !stri_detect_fixed(str = sim@outputs$file,pattern = txtTimeA)
-       sim@outputs[wh, "file"] <- paste0(
-         file_path_sans_ext(sim@outputs[wh, "file"]),
-         "_", txtTimeA, txtTimeB[wh],
-         ifelse(nchar(file_ext(sim@outputs[wh, "file"])) > 0, ".", ""),
-         ifelse(nchar(file_ext(sim@outputs[wh, "file"])) > 0,
-                file_ext(sim@outputs[wh, "file"]),
-                "")
-       )
-     } else {
-       sim@outputs <- value
-     }
+      # If the file name already has a time unit on it,
+      # i.e., passed explicitly by user, then don't postpend again
+      txtTimeA <- paste0(attr(sim@outputs[, "saveTime"], "unit"))
+      txtTimeB <- paddedFloatToChar(
+        sim@outputs[, "saveTime"],
+        ceiling(log10(end(sim, sim@simtimes[["timeunit"]]) + 1))
+      )
+      # Add time unit and saveTime to filename, without stripping extension
+      wh <- !stri_detect_fixed(str = sim@outputs$file,pattern = txtTimeA)
+      sim@outputs[wh, "file"] <- paste0(
+        file_path_sans_ext(sim@outputs[wh, "file"]),
+        "_", txtTimeA, txtTimeB[wh],
+        ifelse(nchar(file_ext(sim@outputs[wh, "file"])) > 0, ".", ""),
+        ifelse(nchar(file_ext(sim@outputs[wh, "file"])) > 0,
+               file_ext(sim@outputs[wh, "file"]), "")
+      )
+    } else {
+      sim@outputs <- value
+    }
 
-     if (!all(.fileTableOutCols %in% names(sim@outputs))) {
-       stop(paste("output table must have columns named",
-                  paste(.fileTableOutCols, collapse = ", ")))
-     }
+    if (!all(.fileTableOutCols %in% names(sim@outputs))) {
+      stop(paste("output table must have columns named",
+                 paste(.fileTableOutCols, collapse = ", ")))
+    }
 
+    sim <- .findAllObjNames(sim)
+    validObject(sim, complete = TRUE)
     return(sim)
 })
 

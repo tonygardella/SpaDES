@@ -201,7 +201,10 @@ setMethod(
       }
     })
 
-    x$childModules <- x$childModules %>% as.character %>% na.omit %>% as.character
+    x$childModules <- x$childModules %>%
+      as.character() %>%
+      na.omit() %>%
+      as.character()
 
     x$authors <- if ( is.null(x$authors) || is.na(x$authors) ) {
       person("unknown")
@@ -318,7 +321,7 @@ setMethod(
     ## create module deps object and add to sim deps
     m <- do.call(new, c(".moduleDeps", x))
     return(.addDepends(sim, m))
-  })
+})
 
 ################################################################################
 #' Define a parameter used in a module

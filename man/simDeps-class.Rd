@@ -12,6 +12,9 @@ Defines all simulation dependencies for all modules within a SpaDES simulation.
 
 \describe{
 \item{\code{dependencies}}{List of \code{\link{.moduleDeps}} dependency objects.}
+
+\item{\code{.allObjNames}}{A named list in which to store the names of all input/output
+objects, for fast lookup during the simulation.}
 }}
 \author{
 Alex Chubaty

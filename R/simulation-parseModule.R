@@ -144,14 +144,15 @@ setMethod(
     parent_ids <- integer()
     for (j in .unparsed(modules)) {
       m <- modules[[j]][1]
-      filename <-
-        paste(sim@paths[['modulePath']], "/", m, "/", m, ".R", sep = "")
+      filename <- paste(sim@paths[['modulePath']], "/", m, "/", m, ".R", sep = "")
       parsedFile <- parse(filename)
-      defineModuleItem <-
-        grepl(pattern = "defineModule", parsedFile)
+      defineModuleItem <- grepl(pattern = "defineModule", parsedFile)
+
+      ## create new environment for storing module's functions, objects, etc.
+      sim@.envir[[m]] <- new.env(parent = envir(sim))
 
       # evaluate the rest of the parsed file
-      eval(parsedFile[!defineModuleItem], envir = sim@.envir)
+      eval(parsedFile[!defineModuleItem], envir = sim@.envir[[m]])
 
       # parse any scripts in R subfolder
       RSubFolder <- file.path(dirname(filename), "R")

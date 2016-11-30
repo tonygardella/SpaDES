@@ -5,7 +5,7 @@ test_that("simulation runs with simInit and spades", {
 
   times <- list(start = 0.0, end = 10, timeunit = "year")
   params <- list(
-    .globals = list(burnStats = "npixelsburned", stackName = "landscape"),
+    .globals = list(burnStats = "npixelsburned"),
     randomLandscapes = list(.plotInitialTime = NA, .plotInterval = NA),
     caribouMovement = list(.plotInitialTime = NA, .plotInterval = NA, torus = TRUE),
     fireSpread = list(.plotInitialTime = NA, .plotInterval = NA)
@@ -194,14 +194,14 @@ test_that("spades calls with different signatures don't work", {
 
   times <- list(start = 0.0, end = 0, timeunit = "year")
   params <- list(
-    .globals = list(burnStats = "npixelsburned", stackName = "landscape"),
-    randomLandscapes = list(nx=20, ny=20)
+    .globals = list(burnStats = "npixelsburned"),
+    randomLandscapes = list(nx = 20, ny = 20)
   )
   modules <- list("randomLandscapes", "fireSpread")
   paths <- list(modulePath = system.file("sampleModules", package = "SpaDES"))
 
   for (i in 1:2) {
-    a <- simInit(times, params, modules, paths=paths)
+    a <- simInit(times, params, modules, paths = paths)
     paths(a)$cachePath <- file.path(tempdir(), "cache") %>% checkPath(create = TRUE)
     assign(paste0("st", i), system.time(spades(a, cache = TRUE, .plotInitialTime = NA)))
   }
