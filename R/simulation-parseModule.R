@@ -153,6 +153,14 @@ setMethod(
       # evaluate the rest of the parsed file
       eval(parsedFile[!defineModuleItem], envir = sim@.envir[[m]])
 
+      # TEMPORARY: allow backward compatibility for modules with `doEvent.moduleName`
+      if (is.null(sim@.envir[[m]][["doEvent"]])) {
+        ## errors when getting doEvent.parentModule
+        assign("doEvent",
+               try(get(paste0("doEvent.", m), envir = sim@.envir[[m]]), silent = TRUE),
+               envir = sim@.envir[[m]])
+      }
+
       # parse any scripts in R subfolder
       RSubFolder <- file.path(dirname(filename), "R")
       RScript <- dir(RSubFolder)
