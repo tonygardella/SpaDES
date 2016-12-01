@@ -17,8 +17,7 @@ if (getRversion() >= "3.1.0") {
 #' @keywords internal
 #' @rdname findAllObjNames
 #'
-setGeneric(".findAllObjNames",
-           function(sim) {
+setGeneric(".findAllObjNames", function(sim) {
   standardGeneric(".findAllObjNames")
 })
 
@@ -545,8 +544,7 @@ setMethod(
             "loadTime in ?simInit"
           )
         )
-        sim@events <-
-          sim@events[eventTime >= sim@simtimes[["start"]]]
+        sim@events <- sim@events[eventTime >= sim@simtimes[["start"]]]
       }
     }
 
