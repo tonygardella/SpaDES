@@ -586,9 +586,7 @@ setMethod(
                         inputs,
                         outputs,
                         loadOrder) {
-    li <-
-      lapply(names(match.call()[-1]), function(x)
-        eval(parse(text = x)))
+    li <- lapply(names(match.call()[-1]), function(x) eval(parse(text = x)))
     names(li) <- names(match.call())[-1]
     # find the simInit call that was responsible for this, get the objects
     #   in the environment of the parents of that call, and pass them to new
@@ -622,9 +620,7 @@ setMethod(
                         inputs,
                         outputs,
                         loadOrder) {
-    li <-
-      lapply(names(match.call()[-1]), function(x)
-        eval(parse(text = x)))
+    li <- lapply(names(match.call()[-1]), function(x) eval(parse(text = x)))
     names(li) <- names(match.call())[-1]
     li$modules <- as.list(modules)
     sim <- do.call("simInit", args = li)
@@ -655,9 +651,7 @@ setMethod(
                         inputs,
                         outputs,
                         loadOrder) {
-    li <-
-      lapply(names(match.call()[-1]), function(x)
-        eval(parse(text = x)))
+    li <- lapply(names(match.call()[-1]), function(x) eval(parse(text = x)))
     names(li) <- names(match.call())[-1]
 
     if (missing(times))

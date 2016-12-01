@@ -138,8 +138,8 @@ init <- function(sim) {
 
   ### create burn map that tracks fire locations over time
   Fires <- raster(extent(landscapes), ncol = ncol(landscapes),
-                  nrow = nrow(landscapes), vals = 0)
-  names(Fires) <- "Fires"
+                  nrow = nrow(landscapes), vals = 0) %>%
+    stats::setNames("Fires")
   setColors(Fires) <- c("white", rev(heat.colors(9)))
   Fires <- setValues(Fires, 0)
 
@@ -162,8 +162,8 @@ burn <- function(sim) {
                   directions = 8,
                   iterations = P(sim)$its,
                   plot.it = FALSE,
-                  id = TRUE)
-  names(Fires) <- "Fires"
+                  id = TRUE) %>%
+    stats::setNames("Fires")
   setColors(Fires) <- c("white", rev(heat.colors(9)))
   landscapes$Fires <- Fires
   sim[[P(sim)$stackName]] <- landscapes

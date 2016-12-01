@@ -545,18 +545,19 @@ test_that("rings and cir", {
   }, add = TRUE)
 
   a <- raster(extent(0, 1e2, 0, 1e2), res = 1)
-  hab <- gaussMap(a,speedup = 1) # if raster is large (>1e6 pixels), use speedup>1
-  names(hab) <- "hab"
-  hab2 <- hab > 0
+
+  # if raster is large (>1e6 pixels), use speedup>1
+  hab <- gaussMap(a, speedup = 1) %>% setNames("hab")
+  hab2 <- (hab > 0)
   N <- 2
   caribou <- SpatialPoints(coords = cbind(x = stats::runif(N, xmin(hab), xmax(hab)),
                                           y = stats::runif(N, xmin(hab), xmax(hab))))
 
   radius <- 15
-  cirsEx <- cir(hab, caribou, maxRadius = radius*1.5, minRadius = radius, simplify = TRUE,
-                includeBehavior = "excludePixels")
-  cirsIncl <- cir(hab, caribou, maxRadius = radius*1.5, minRadius = radius, simplify = TRUE,
-                  includeBehavior = "includePixels")
+  cirsEx <- cir(hab, caribou, maxRadius = radius*1.5, minRadius = radius,
+                simplify = TRUE, includeBehavior = "excludePixels")
+  cirsIncl <- cir(hab, caribou, maxRadius = radius*1.5, minRadius = radius,
+                  simplify = TRUE, includeBehavior = "includePixels")
 
   expect_true(NROW(cirsEx) < NROW(cirsIncl))
 
@@ -668,8 +669,10 @@ test_that("distanceFromPoints does not work correctly", {
   library(data.table); on.exit(detach("package:data.table"), add = TRUE)
 
   hab <- raster(extent(0, 1e2, 0, 1e2), res = 1)
-  hab <- gaussMap(hab, speedup = 1) # if raster is large (>1e6 pixels), use speedup > 1
-  names(hab) <- "hab"
+
+  # if raster is large (>1e6 pixels), use speedup > 1
+  hab <- gaussMap(hab, speedup = 1) %>% setNames("hab")
+
   N <- 1
   coords <- cbind(x = round(stats::runif(N, xmin(hab), xmax(hab))) + 0.5,
                   y = round(stats::runif(N, xmin(hab), xmax(hab))) + 0.5)

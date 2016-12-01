@@ -102,13 +102,13 @@ init <- function(sim) {
   habitatQuality <- habitatQuality/maxValue(habitatQuality)
 
   # Stack them into a single stack and assign to global env
-  mapStack <- stack(DEM, forestAge, habitatQuality, percentPine)
-  names(mapStack) <- c("DEM", "forestAge", "habitatQuality", "percentPine")
+  mapStack <- stack(DEM, forestAge, habitatQuality, percentPine) %>%
+    stats::setNames(c("DEM", "forestAge", "habitatQuality", "percentPine"))
 
   setColors(mapStack) <- list(DEM = grDevices::terrain.colors(100),
-                              forestAge = brewer.pal(9,"BuGn"),
-                              habitatQuality = brewer.pal(8,"Spectral"),
-                              percentPine = brewer.pal(9,"Greens"))
+                              forestAge = brewer.pal(9, "BuGn"),
+                              habitatQuality = brewer.pal(8, "Spectral"),
+                              percentPine = brewer.pal(9, "Greens"))
   sim[[P(sim)$stackName]] <- mapStack
   return(invisible(sim))
 }

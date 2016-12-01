@@ -10,8 +10,9 @@
 #' @return A list of module metadata, matching the structure in
 #'         \code{\link{defineModule}}.
 #'
-#' @export
 #' @docType methods
+#' @export
+#' @importFrom stats setNames
 #' @rdname moduleMetadata
 #'
 #' @seealso \code{\link{defineModule}}
@@ -76,33 +77,30 @@ setMethod(
     defineModuleListItems <- c("name", "description", "keywords", "childModules", "authors",
       "version", "spatialExtent", "timeframe", "timeunit", "citation",
       "documentation", "reqdPkgs", "parameters", "inputObjects", "outputObjects")
-    metadata <- lapply(defineModuleListItems,
-           function(xx) {
-             pmp <- .parseModulePartial(filename = file.path(path,module, paste0(module, ".R")),
-                                        defineModuleElement = xx)
-             out2 <- try(eval(pmp), silent = TRUE)
-             if (is(out2, "try-error")) {
-               inner2 <- lapply(pmp, function(yyy) { # pmp is whole rbind statement
-                 out4 <- try(eval(yyy), silent = TRUE)
-                 if (is(out4, "try-error")) {
-                   yyy <- lapply(yyy, function(yyyyy) { # yyy is whole defineParameter statement
-                     out5 <- try(eval(yyyyy), silent = TRUE)
-                     if (is(out5, "try-error")) yyyyy <- deparse(yyyyy)
-                     return(yyyyy)
-                    })
-                  }
-                 if (is.list(yyy)) yyy <- as.call(yyy)
-                 return(yyy)
-               })
-               out2 <- as.call(inner2)
-             }
-             return(eval(out2))
+    metadata <- lapply(
+      defineModuleListItems,
+      function(xx) {
+        pmp <- .parseModulePartial(filename = file.path(path,module, paste0(module, ".R")),
+                                   defineModuleElement = xx)
+        out2 <- try(eval(pmp), silent = TRUE)
+        if (is(out2, "try-error")) {
+          inner2 <- lapply(pmp, function(yyy) { # pmp is whole rbind statement
+            out4 <- try(eval(yyy), silent = TRUE)
+            if (is(out4, "try-error")) {
+              yyy <- lapply(yyy, function(yyyyy) { # yyy is whole defineParameter statement
+                out5 <- try(eval(yyyyy), silent = TRUE)
+                if (is(out5, "try-error")) yyyyy <- deparse(yyyyy)
+                return(yyyyy)
+              })
+            }
+            if (is.list(yyy)) yyy <- as.call(yyy)
+            return(yyy)
           })
-
-    names(metadata) <- defineModuleListItems
-
-    #metadata <- eval(parse(text = x)) # can't be used because can't evaluate start(sim)
-
+          out2 <- as.call(inner2)
+        }
+        return(eval(out2))
+    }) %>%
+      setNames(defineModuleListItems)
     return(metadata)
 })
 
@@ -131,5 +129,4 @@ setMethod(
       names(metadata) <- module
     }
     return(metadata)
-
-  })
+})

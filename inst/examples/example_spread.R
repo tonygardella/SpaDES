@@ -1,10 +1,11 @@
+library(igraph)
 library(raster)
 library(RColorBrewer)
 
 # Make random forest cover map
 emptyRas <- raster(extent(0, 1e2, 0, 1e2), res = 1)
-hab <- randomPolygons(emptyRas, numTypes = 40)
-names(hab) <- "hab"
+hab <- randomPolygons(emptyRas, numTypes = 40) %>%
+  setNames("hab")
 mask <- raster(emptyRas)
 mask <- setValues(mask, 0)
 mask[1:5000] <- 1

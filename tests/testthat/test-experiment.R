@@ -138,7 +138,7 @@ test_that("experiment does not work correctly", {
 
   # Test object passing in
   experimentObj <- list(landscape = lapply(landscapeFiles, readRDS) %>%
-                          setNames(paste0("landscape",1:2)))
+                          stats::setNames(paste0("landscape", 1:2)))
   # Pass in this list of landscape objects
   set.seed(1232)
   sims3 <- experiment(mySimNoRL, objects = experimentObj)

@@ -16,6 +16,7 @@
 #' @author Alex Chubaty
 #'
 #' #@importClassesFrom NetLogoRClasses agentMatrix
+#' @importFrom stats setNames
 #'
 setGeneric("getColors", function(object) {
   standardGeneric("getColors")
@@ -28,8 +29,8 @@ setMethod("getColors",
             nams <- names(object)
             cols <- lapply(nams, function(x) {
               as.character(object[[x]]@legend@colortable)
-            })
-            names(cols) <- nams
+            }) %>%
+              setNames(nams)
             return(cols)
 })
 

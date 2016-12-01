@@ -18,13 +18,13 @@
 #'
 #' @seealso \code{\link[raster]{merge}}, \code{\link[raster]{mosaic}}
 #'
-# igraph exports %>% from magrittr
-#' @importFrom raster crop extent merge
-#' @export
-#' @docType methods
-#' @rdname mergeRaster
-#'
 #' @author Yong Luo and Alex Chubaty
+#' @docType methods
+#' @export
+#' @importFrom raster crop extent merge
+#' @importFrom stats setNames
+# igraph exports %>% from magrittr
+#' @rdname mergeRaster
 #'
 #' @example inst/examples/example_splitRaster.R
 #'
@@ -69,7 +69,7 @@ setMethod(
       }
       x[[i]] <- crop(r, extent(xminCut, xmaxCut, yminCut, ymaxCut))
     }
-    y <- do.call(raster::merge, x)
-    names(y) <- gsub("_tile[0-9].*$", "", names(x[[1]]))
+    y <- do.call(raster::merge, x) %>%
+      setNames(gsub("_tile[0-9].*$", "", names(x[[1]])))
     return(y)
 })

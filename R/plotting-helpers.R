@@ -218,8 +218,7 @@ setMethod(
       })
     }
 
-    names(plotObjects) <- sapply(objs,function(x)
-      x$objs)
+    names(plotObjects) <- sapply(objs, function(x) x$objs)
 
     if (!is.null(suppliedNames)) {
       if (all(sapply(suppliedNames, nchar) > 0)) {

@@ -258,6 +258,7 @@ setReplaceMethod("envir",
 #' @seealso \code{\link{SpaDES}}, specifically the section 1.2.1 on Simulation Parameters.
 #'
 #' @export
+#' @importFrom stats setNames
 #' @include simList-class.R
 #' @docType methods
 #' @aliases simList-accessors-objects
@@ -275,8 +276,8 @@ setMethod(
   definition = function(sim, ...) {
     w <- lapply(ls(sim@.envir, ...), function(z) {
       eval(parse(text = z), envir = sim@.envir)
-    })
-    names(w) <- ls(sim@.envir, ...)
+    }) %>%
+      setNames(ls(sim@.envir, ...))
     return(w)
 })
 
@@ -728,6 +729,7 @@ setReplaceMethod("globals",
 #'                 a data.frame with 1 row for each parameter within nested lists,
 #'                 with the same structure as \code{params}.
 #'
+#' @importFrom stats setNames
 #' @include simList-class.R
 #' @export
 #' @docType methods
@@ -756,10 +758,10 @@ setMethod("parameters",
               } else {
                 tmp <- lapply(depends(sim)@dependencies,
                               function(x) {
-                                out <- lapply(seq_len(NROW(x@parameters)),
-                                              function(y) x@parameters[y,-1])
-                                names(out) <- x@parameters$paramName
-                                out})
+                                lapply(seq_len(NROW(x@parameters)),
+                                       function(y) x@parameters[y, -1]) %>%
+                                  setNames(x@parameters$paramName)
+                       })
               }
             } else {
               tmp <- NULL
@@ -1637,7 +1639,6 @@ setReplaceMethod(
       sim@paths[whichUnnamed][seq_len(sum(whValueUnnamed))] <- value[whValueUnnamed]
     }
 
-    #names(sim@paths) <- c("cachePath", "modulePath", "inputPath", "outputPath")
     if (is(try(archivist::showLocalRepo(sim@paths$cachePath), silent = TRUE),
            "try-error")) {
 
@@ -2251,6 +2252,7 @@ setReplaceMethod(
 #' than \code{time(sim)}. So as a module developer, it is advantageous to
 #' write out the longer one, minimizing the looking up that R must do.
 #'
+#' @importFrom stats setNames
 #' @include simList-class.R
 #' @export
 #' @docType methods
@@ -2278,10 +2280,8 @@ setMethod(
     } else {
       timestepUnits <- lapply(depends(x)@dependencies[isNonParent], function(y) {
         y@timeunit
-      })
-      names(timestepUnits) <- sapply(depends(x)@dependencies[isNonParent], function(y) {
-        y@name
-      })
+      }) %>%
+        setNames(sapply(depends(x)@dependencies[isNonParent], function(y) y@name))
     }
     return(timestepUnits)
 })
@@ -2322,7 +2322,6 @@ setMethod(
 #' @include simList-class.R
 #' @importFrom data.table ':=' data.table copy
 #' @importFrom lazyeval interp
-#' @importFrom stats setNames
 #' @docType methods
 #' @aliases simList-accessors-events
 #' @rdname simList-accessors-events
@@ -2400,7 +2399,6 @@ setReplaceMethod(
 #' @include simList-class.R
 #' @importFrom data.table ':=' data.table
 #' @importFrom lazyeval interp
-#' @importFrom stats setNames
 #' @export
 #' @docType methods
 #' @rdname simList-accessors-events
@@ -2471,7 +2469,6 @@ setReplaceMethod(
 #' @include simList-class.R
 #' @importFrom data.table ':=' data.table
 #' @importFrom lazyeval interp
-#' @importFrom stats setNames
 #' @export
 #' @docType methods
 #' @rdname simList-accessors-events

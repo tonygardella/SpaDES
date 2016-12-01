@@ -33,14 +33,17 @@ Convert reduced representation to full raster
 }
 \examples{
 library(data.table)
+library(igraph)
 library(raster)
-Ras <- raster(extent(0,15,0,15), res=1)
-fullRas <- randomPolygons(Ras, numTypes=2)
-names(fullRas) <- "mapcodeAll"
+Ras <- raster(extent(0, 15, 0, 15), res = 1)
+fullRas <- randomPolygons(Ras, numTypes = 2) \%>\%
+  setNames("mapcodeAll")
 uniqueComms <- unique(fullRas)
-reducedDT <- data.table(mapcodeAll=uniqueComms,
-   communities=sample(1:1000,length(uniqueComms)),
-   biomass=rnbinom(length(uniqueComms),mu=4000,0.4))
+reducedDT <- data.table(
+  mapcodeAll = uniqueComms,
+  communities=sample(1:1000, length(uniqueComms)),
+  biomass=rnbinom(length(uniqueComms), mu = 4000, 0.4)
+)
 biomass <- rasterizeReduced(reducedDT, fullRas, "biomass")
 
 # The default key is the layer name of the fullRas, so even
@@ -53,6 +56,7 @@ if (interactive()) {
   clearPlot()
   Plot(biomass, communities, fullRas)
 }
+
 }
 \author{
 Eliot McIntire
