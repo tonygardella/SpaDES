@@ -12,6 +12,31 @@
 #'   \code{eventPriority} \tab The priority given to the event. \cr
 #' }
 #'
+#' @return Returns a named list of the core modules.
+#'
+#' @author Alex Chubaty
+#' @docType methods
+#' @keywords internal
+#' @name .coreModules
+#' @rdname coreModules
+.coreModules <- function() {
+  list(checkpoint = "checkpoint", save = "save", progress = "progress", load = "load")
+}
+
+################################################################################
+#' Blank (template) event list
+#'
+#' Internal function called from \code{spades}, returning an empty event list.
+#'
+#' Event lists are sorted (keyed) first by time, second by priority.
+#' Each event is represented by a \code{\link{data.table}} row consisting of:
+#' \tabular{ll}{
+#'   \code{eventTime} \tab The time the event is to occur.\cr
+#'   \code{moduleName} \tab The module from which the event is taken.\cr
+#'   \code{eventType} \tab A character string for the programmer-defined event type.\cr
+#'   \code{eventPriority} \tab The priority given to the event. \cr
+#' }
+#'
 #' @param eventTime      The time the event is to occur.
 #' @param moduleName     The module from which the event is taken.
 #' @param eventType      A character string for the programmer-defined event type.
@@ -19,13 +44,10 @@
 #'
 #' @return Returns an empty event list.
 #'
+#' @author Alex Chubaty
 #' @importFrom data.table data.table
 #' @keywords internal
 #' @docType methods
-#' @rdname emptyEventList
-#'
-#' @author Alex Chubaty
-#' @importFrom data.table data.table
 #' @name emptyEventList
 #' @rdname emptyEventList
 .emptyEventListDT <- data.table(eventTime = integer(0L), moduleName = character(0L),
@@ -84,9 +106,7 @@ setMethod(
   assignInMyNamespace(".singleEventListDT", data.table(eventTime = integer(1L), moduleName = character(1L),
                                                        eventType = character(1L), eventPriority = numeric(1L)))
   assignInMyNamespace(".currentEventDT",.emptyEventList(numeric(1), character(1), character(1), numeric(1)))
-
 }
-
 
 #' @rdname emptyEventList
 .emptyEventListCols <- colnames(.emptyEventList())

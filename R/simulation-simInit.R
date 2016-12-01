@@ -289,7 +289,7 @@ setMethod(
       lapply(., `attributes<-`, list(parsed = FALSE))
 
     # core modules
-    core <- list("checkpoint", "save", "progress", "load")
+    core <- .coreModules() %>% unname()
 
     # parameters for core modules
     dotParamsReal <- list(".saveInterval",

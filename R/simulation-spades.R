@@ -49,10 +49,7 @@ setMethod(
   signature(sim = "simList"),
   definition = function(sim, debug, notOlderThan) {
     # core modules
-    core <- list(checkpoint = "checkpoint",
-                 save = "save",
-                 progress = "progress",
-                 load = "load")
+    core <- .coreModules()
 
     cur <- sim@current
     if (NROW(cur) == 0) {
