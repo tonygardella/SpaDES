@@ -44,61 +44,66 @@ defineModule(sim, list(
 
 ## event types
 doEvent <- function(sim, eventTime, eventType, debug = FALSE) {
-  if (eventType == "init") {
-    ### check for more detailed object dependencies:
-    ### (use `checkObject` or similar)
-    checkObject(sim, name = P(sim)$stackName, layer = "habitatQuality")
+  switch(
+    eventType,
+    init = {
+      ### check for more detailed object dependencies:
+      ### (use `checkObject` or similar)
+      checkObject(sim, name = P(sim)$stackName, layer = "habitatQuality")
 
-    # do stuff for this event
-    sim <- sim$init(sim)
+      # do stuff for this event
+      sim <- sim$init(sim)
 
-    # schedule the next event
-    sim <- scheduleEvent(sim, P(sim)$moveInitialTime, "caribouMovement", "move")
+      # schedule the next event
+      sim <- scheduleEvent(sim, P(sim)$moveInitialTime, "caribouMovement", "move")
 
-    sim <- scheduleEvent(sim, P(sim)$.plotInitialTime,
-                         "caribouMovement", "plot.init", .last())
-    sim <- scheduleEvent(sim, P(sim)$.saveInitialTime,
-                         "caribouMovement", "save", .last() + 1)
-  } else if (eventType == "move") {
-    # do stuff for this event
-    sim <- sim$caribouMove(sim)
+      sim <- scheduleEvent(sim, P(sim)$.plotInitialTime,
+                          "caribouMovement", "plot.init", .last())
+      sim <- scheduleEvent(sim, P(sim)$.saveInitialTime,
+                          "caribouMovement", "save", .last() + 1)
+    },
+    move = {
+      # do stuff for this event
+      sim <- sim$caribouMove(sim)
 
-    # schedule the next event
-    sim <- scheduleEvent(sim, time(sim) + P(sim)$moveInterval,
-                         "caribouMovement", "move")
-  } else if (eventType == "plot.init") {
-    # do stuff for this event
-    Plot(sim$caribou, addTo = paste("sim", P(sim)$stackName,
-                                    "habitatQuality", sep = "$"),
-         new = FALSE, size = 0.2, pch = 19, gp = gpar(cex = 0.6))
+      # schedule the next event
+      sim <- scheduleEvent(sim, time(sim) + P(sim)$moveInterval,
+                           "caribouMovement", "move")
+    },
+    plot.init = {
+      # do stuff for this event
+      Plot(sim$caribou, addTo = paste("sim", P(sim)$stackName,
+                                      "habitatQuality", sep = "$"),
+           new = FALSE, size = 0.2, pch = 19, gp = gpar(cex = 0.6))
 
-    # schedule the next event
-    sim <- scheduleEvent(sim, time(sim) + P(sim)$.plotInterval,
-                         "caribouMovement", "plot", .last())
-  } else if (eventType == "plot") {
-    # do stuff for this event
-    Plot(sim$caribou, addTo = paste("sim", P(sim)$stackName,
-                                    "habitatQuality", sep = "$"),
-         new = FALSE, pch = 19, size = 0.2, gp = gpar(cex = 0.6))
-    Plot(sim$caribou, new = FALSE, pch = 19, size = 0.1, gp = gpar(cex = 0.6))
+      # schedule the next event
+      sim <- scheduleEvent(sim, time(sim) + P(sim)$.plotInterval,
+                           "caribouMovement", "plot", .last())
+    },
+    plot = {
+      # do stuff for this event
+      Plot(sim$caribou, addTo = paste("sim", P(sim)$stackName,
+                                      "habitatQuality", sep = "$"),
+           new = FALSE, pch = 19, size = 0.2, gp = gpar(cex = 0.6))
+      Plot(sim$caribou, new = FALSE, pch = 19, size = 0.1, gp = gpar(cex = 0.6))
 
-    # schedule the next event
-    sim <- scheduleEvent(sim, time(sim) + P(sim)$.plotInterval,
-                         "caribouMovement", "plot", .last())
-  } else if (eventType == "save") {
-    # do stuff for this event
-    sim <- saveFiles(sim)
+      # schedule the next event
+      sim <- scheduleEvent(sim, time(sim) + P(sim)$.plotInterval,
+                           "caribouMovement", "plot", .last())
+    },
+    save = {
+      # do stuff for this event
+      sim <- saveFiles(sim)
 
-    # schedule the next event
-    sim <- scheduleEvent(sim, time(sim) + P(sim)$.saveInterval,
-                         "caribouMovement", "save", .last() + 1)
-
-  } else {
+      # schedule the next event
+      sim <- scheduleEvent(sim, time(sim) + P(sim)$.saveInterval,
+                           "caribouMovement", "save", .last() + 1)
+    },
     warning(paste(
       "Undefined event type: \'", events(sim)[1, "eventType", with = FALSE],
       "\' in module \'", events(sim)[1, "moduleName", with = FALSE], "\'", sep = ""
     ))
-  }
+  )
   return(invisible(sim))
 }
 
