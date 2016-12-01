@@ -151,8 +151,7 @@ setMethod(
   "checkParams",
   signature(sim = "simList", coreModules = "list", coreParams = "list",
             path = "character"),
-  definition=function(sim, coreModules, coreParams, path, ...) {
-
+  definition = function(sim, coreModules, coreParams, path, ...) {
     params <- sim@params
     modules <- sim@modules
     userModules <- modules[-which(coreModules %in% modules)]

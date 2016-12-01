@@ -17,8 +17,7 @@ if (getRversion() >= "3.1.0") {
 #' @keywords internal
 #' @rdname findAllObjNames
 #'
-setGeneric(".findAllObjNames",
-           function(sim) {
+setGeneric(".findAllObjNames", function(sim) {
   standardGeneric(".findAllObjNames")
 })
 
@@ -289,7 +288,7 @@ setMethod(
       lapply(., `attributes<-`, list(parsed = FALSE))
 
     # core modules
-    core <- list("checkpoint", "save", "progress", "load")
+    core <- .coreModules() %>% unname()
 
     # parameters for core modules
     dotParamsReal <- list(".saveInterval",
@@ -545,8 +544,7 @@ setMethod(
             "loadTime in ?simInit"
           )
         )
-        sim@events <-
-          sim@events[eventTime >= sim@simtimes[["start"]]]
+        sim@events <- sim@events[eventTime >= sim@simtimes[["start"]]]
       }
     }
 

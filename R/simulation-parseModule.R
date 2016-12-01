@@ -17,8 +17,7 @@ if (getRversion() >= "3.1.0") {
 #'
 #' @author Alex Chubaty
 #'
-setGeneric(".unparsed",
-           function(modules) {
+setGeneric(".unparsed", function(modules) {
              standardGeneric(".unparsed")
 })
 
@@ -154,6 +153,14 @@ setMethod(
       # evaluate the rest of the parsed file
       eval(parsedFile[!defineModuleItem], envir = sim@.envir[[m]])
 
+      # TEMPORARY: allow backward compatibility for modules with `doEvent.moduleName`
+      if (is.null(sim@.envir[[m]][["doEvent"]])) {
+        ## errors when getting doEvent.parentModule
+        assign("doEvent",
+               try(get(paste0("doEvent.", m), envir = sim@.envir[[m]]), silent = TRUE),
+               envir = sim@.envir[[m]])
+      }
+
       # parse any scripts in R subfolder
       RSubFolder <- file.path(dirname(filename), "R")
       RScript <- dir(RSubFolder)
@@ -166,8 +173,7 @@ setMethod(
 
       # evaluate all but inputObjects and outputObjects part of 'defineModule'
       #  This allow user to use params(sim) in their inputObjects
-      namesParsedList <-
-        names(parsedFile[defineModuleItem][[1]][[3]])
+      namesParsedList <- names(parsedFile[defineModuleItem][[1]][[3]])
       inObjs <- (namesParsedList == "inputObjects")
       outObjs <- (namesParsedList == "outputObjects")
       pf <- parsedFile[defineModuleItem]
@@ -193,18 +199,15 @@ setMethod(
       # do inputObjects and outputObjects
       pf <- parsedFile[defineModuleItem]
       if (any(inObjs)) {
-        sim@depends@dependencies[[i]]@inputObjects <-
-          eval(pf[[1]][[3]][inObjs][[1]])
-        sim@depends@dependencies[[i]]@outputObjects <-
-          eval(pf[[1]][[3]][outObjs][[1]])
+        sim@depends@dependencies[[i]]@inputObjects <- eval(pf[[1]][[3]][inObjs][[1]])
+        sim@depends@dependencies[[i]]@outputObjects <- eval(pf[[1]][[3]][outObjs][[1]])
       }
 
       # update parse status of the module
       attributes(modules[[j]]) <- list(parsed = TRUE)
 
       # add child modules to list of all child modules, to be parsed later
-      children <-
-        as.list(sim@depends@dependencies[[i]]@childModules) %>%
+      children <- as.list(sim@depends@dependencies[[i]]@childModules) %>%
         lapply(., `attributes<-`, list(parsed = FALSE))
       all_children <- append_attr(all_children, children)
 

@@ -49,10 +49,7 @@ setMethod(
   signature(sim = "simList"),
   definition = function(sim, debug, notOlderThan) {
     # core modules
-    core <- list(checkpoint = "checkpoint",
-                 save = "save",
-                 progress = "progress",
-                 load = "load")
+    core <- .coreModules()
 
     cur <- sim@current
     if (NROW(cur) == 0) {
@@ -371,10 +368,10 @@ setMethod(
         } else {
           # This is faster than rbindlist below. So, use for smaller event queues
           if (nrowEvnts < .lengthEventsDT) {
-            for(i in 1:.numColsEventList) {
-              set(.eventsDT[[nrowEvnts+2]], ,i, c(sim@events[[i]], newEvent[[i]]))
+            for (i in 1:.numColsEventList) {
+              set(.eventsDT[[nrowEvnts+2]], , i, c(sim@events[[i]], newEvent[[i]]))
             }
-            sim@events <- .eventsDT[[nrowEvnts+2]]
+            sim@events <- .eventsDT[[nrowEvnts + 2]]
           } else {
             sim@events <- rbindlist(list(sim@events, newEvent))
           }
