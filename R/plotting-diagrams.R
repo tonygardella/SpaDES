@@ -61,9 +61,10 @@ setMethod("ganttStatus",
 #'
 #' @return A list of data.frames
 #'
+#' @docType methods
 #' @include simList-accessors.R
 # @importFrom utils tail
-#' @docType methods
+#' @importFrom stats setNames
 #' @keywords internal
 #' @rdname sim2gantt
 #'
@@ -101,8 +102,8 @@ setMethod(
           DT[moduleName == x]$eventTime * ts + width, origin = startDate
         )
       )
-    })
-    names(out) <- modules
+    }) %>%
+      setNames(modules)
     return(out)
 })
 

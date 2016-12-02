@@ -262,7 +262,7 @@ if (getRversion() >= "3.1.0") {
 #' @importFrom raster extent maxValue minValue ncell ncol nrow raster res setValues
 #' @importFrom ff ff as.ram
 #' @importFrom ffbase ffwhich
-#' @importFrom stats runif
+#' @importFrom stats runif setNames
 #' @importFrom fpCompare %<=%
 #' @docType methods
 #'
@@ -420,7 +420,7 @@ setMethod(
       LandRasNeeded <- any(stopRuleObjs == "landscape")
       colNamesPotentials <- c("id", "landscape"[LandRasNeeded], "cells", "prev")
       argNames <- c(colNamesPotentials, names(otherVars))
-      whArgs <- match(names(formals(stopRule)),argNames)
+      whArgs <- match(names(formals(stopRule)), argNames)
 
       # Raster indexing is slow. If there is are Rasters submitted with the stopRule
       #  then this will convert them to vectors first. Clearly, this will have
@@ -564,7 +564,8 @@ setMethod(
       }
 
       if (is.numeric(spreadProb)) {
-        if (n == 1 & spreadStateExists) { # need cell specific values
+        if (n == 1 & spreadStateExists) {
+          # need cell specific values
           spreadProbs <- rep(spreadProb, NROW(potentials))
           prevIndices <- potentials[, 1L] %fin% spreadState[active == TRUE, indices]
           spreadProbs[prevIndices] <- spreadProbLater
@@ -575,7 +576,8 @@ setMethod(
             spreadProbs <- spreadProb
           }
         }
-      } else { # here for raster spreadProb
+      } else {
+        # here for raster spreadProb
         if (n == 1 & spreadStateExists) { # need cell specific values
           spreadProbs <- spreadProb[][potentials[, 2L]]
           prevIndices <- potentials[, 1L] %fin% spreadState[active == TRUE, indices]
@@ -708,9 +710,9 @@ setMethod(
           ids <- unique(tmp[, "id"])
 
           shouldStopList <- lapply(ids, function(id) {
-            shortTmp <- tmp[tmp[,"id"] == id,]
-            args <- append(list(id = id), lapply(colNamesPotentials[-1], function(j) shortTmp[,j])) # instead of as.data.frame
-            names(args) <- colNamesPotentials
+            shortTmp <- tmp[tmp[, "id"] == id,]
+            args <- append(list(id = id), lapply(colNamesPotentials[-1], function(j) shortTmp[, j])) %>%
+              setNames(colNamesPotentials)
             args <- append(args, otherVars)
             do.call(stopRule, args[whArgs])
           })
@@ -718,9 +720,7 @@ setMethod(
             stop("stopRule does not return a length-one logical. Perhaps stopRule need indexing ",
                  "by cells or id?")
 
-          shouldStop <- unlist(shouldStopList)
-
-          names(shouldStop) <- ids
+          shouldStop <- unlist(shouldStopList) %>% setNames(ids)
 
           if (any(shouldStop)) {
             if (stopRuleBehavior != "includeRing") {
@@ -747,14 +747,14 @@ setMethod(
                   args <- append(list(id = id),
                                  lapply(colNamesPotentials[-1], function(j) {
                                    tmp3[1:startLen, j]
-                  })) # instead of as.data.frame
-                  names(args) <- colNamesPotentials
+                  })) %>%
+                    setNames(colNamesPotentials)
                   args <- append(args, otherVars)
                   argsSeq <- seq_along(colNamesPotentials[-1]) + 1
 
                   while (!done) {
                     args[argsSeq] <- lapply(colNamesPotentials[-1], function(j) {
-                      unname(c(args[[j]], tmp3[(startLen + addIncr),j]))
+                      unname(c(args[[j]], tmp3[(startLen + addIncr), j]))
                     }) # instead of as.data.frame
                     done <- do.call(stopRule, args[whArgs])
                     addIncr <- addIncr + 1

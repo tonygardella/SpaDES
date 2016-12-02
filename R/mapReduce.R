@@ -34,14 +34,17 @@ if (getRversion() >= "3.1.0") {
 #' @author Eliot McIntire
 #' @examples
 #' library(data.table)
+#' library(igraph)
 #' library(raster)
-#' Ras <- raster(extent(0,15,0,15), res=1)
-#' fullRas <- randomPolygons(Ras, numTypes=2)
-#' names(fullRas) <- "mapcodeAll"
+#' Ras <- raster(extent(0, 15, 0, 15), res = 1)
+#' fullRas <- randomPolygons(Ras, numTypes = 2) %>%
+#'   setNames("mapcodeAll")
 #' uniqueComms <- unique(fullRas)
-#' reducedDT <- data.table(mapcodeAll=uniqueComms,
-#'    communities=sample(1:1000,length(uniqueComms)),
-#'    biomass=rnbinom(length(uniqueComms),mu=4000,0.4))
+#' reducedDT <- data.table(
+#'   mapcodeAll = uniqueComms,
+#'   communities=sample(1:1000, length(uniqueComms)),
+#'   biomass=rnbinom(length(uniqueComms), mu = 4000, 0.4)
+#' )
 #' biomass <- rasterizeReduced(reducedDT, fullRas, "biomass")
 #'
 #' # The default key is the layer name of the fullRas, so even
@@ -54,6 +57,7 @@ if (getRversion() >= "3.1.0") {
 #'   clearPlot()
 #'   Plot(biomass, communities, fullRas)
 #' }
+#'
 rasterizeReduced <- function(reduced, fullRaster, plotCol, mapcode = names(fullRaster), ...) {
 
   reduced <- data.table(reduced)

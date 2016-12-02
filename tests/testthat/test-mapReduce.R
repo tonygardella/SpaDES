@@ -9,8 +9,7 @@ test_that("mapReduce: file does not work correctly 1", {
 
   Ras <- raster(extent(0, 15, 0, 15), res = 1)
   set.seed(123)
-  fullRas <- randomPolygons(Ras, numTypes = 2)
-  names(fullRas) <- "mapcodeAll"
+  fullRas <- randomPolygons(Ras, numTypes = 2) %>% stats::setNames("mapcodeAll")
   uniqueComms <- raster::unique(fullRas)
   reducedDT <- data.table(
     mapcodeAll = uniqueComms,
@@ -32,9 +31,9 @@ test_that("mapReduce: file does not work correctly 1", {
 #    detach("package:raster"))
 #   }, add = TRUE)
 #
-#   Ras <- raster(extent(0,15,0,15), res=1)
-#   fullRas <- randomPolygons(Ras, numTypes=5, speedup=1, p=0.3)
-#   names(fullRas) <- "mapcodeAll"
+#   Ras <- raster(extent(0, 15, 0, 15), res = 1)
+#   fullRas <- randomPolygons(Ras, numTypes = 5, speedup = 1, p = 0.3) %>%
+#     setNames("mapcodeAll")
 #   uniqueComms <- raster::unique(fullRas)
 #   reducedDT <- data.table(
 #     mapcodeAll=uniqueComms,
@@ -62,8 +61,8 @@ test_that("mapReduce: file does not work correctly 1", {
 #   }, add = TRUE)
 #
 #   Ras <- raster(extent(0, 15, 0, 15), res = 1)
-#   fullRas <- randomPolygons(Ras, numTypes = 5, speedup = 1, p = 0.3)
-#   names(fullRas) <- "mapcodeAll""'
+#   fullRas <- randomPolygons(Ras, numTypes = 5, speedup = 1, p = 0.3) %>%
+#     setNames("mapcodeAll")
 #   uniqueComms <- raster::unique(fullRas)
 #   reducedDT <- data.table(
 #     mapcodeAll=uniqueComms,
@@ -86,9 +85,9 @@ test_that("mapReduce: file does not work correctly 1", {
 #    detach("package:raster"))
 #   }, add = TRUE)
 #
-#   Ras <- raster(extent(0,15,0,15), res=1)
-#   fullRas <- randomPolygons(Ras, numTypes=5, speedup=1, p=0.3)
-#   names(fullRas) <- "mapcodeAll"
+#   Ras <- raster(extent(0, 15, 0, 15), res = 1)
+#   fullRas <- randomPolygons(Ras, numTypes = 5, speedup = 1, p = 0.3) %>%
+#     setNames("mapcodeAll")
 #   uniqueComms <- raster::unique(fullRas)
 #   reducedDT <- data.table(
 #     mapcodeAll=uniqueComms,

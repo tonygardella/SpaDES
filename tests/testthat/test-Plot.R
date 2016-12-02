@@ -19,10 +19,10 @@ test_that("Plot 1 is not error-free", {
   }, add = TRUE)
 
   ras <- raster::raster(xmn = 0, xmx = 10, ymn = 0, ymx = 10, vals = 1, res = 1)
-  DEM87654 <- SpaDES::gaussMap(ras, var = 2, speedup = 1)
-  names(DEM87654) <- "DEM87654"
-  habitatQuality87654 <- SpaDES::gaussMap(ras, var = 2, speedup = 1)
-  names(habitatQuality87654) <- "habitatQuality87654"
+  DEM87654 <- SpaDES::gaussMap(ras, var = 2, speedup = 1) %>%
+    setNames("DEM87654")
+  habitatQuality87654 <- SpaDES::gaussMap(ras, var = 2, speedup = 1) %>%
+    setNames("habitatQuality87654")
   landscape87654 <- raster::stack(DEM87654, habitatQuality87654)
   caribou87654 <- sp::SpatialPoints(
     coords = cbind(x = stats::runif(1e1, 0, 10), y = stats::runif(1e1, 0, 10))
@@ -305,8 +305,7 @@ test_that("Unit tests for plotting colors", {
   ###################################
 
   ras2 <- raster(matrix(c(3, 1, 1, 2), ncol = 2))
-  rasStack <- raster::stack(ras, ras2)
-  names(rasStack) <- c("ras", "ras2")
+  rasStack <- raster::stack(ras, ras2) %>% setNames(c("ras", "ras2"))
   setColors(rasStack, n = 3) <- list(ras = c("black", "blue", "green"))
   png(file = "test.png", width = 400, height = 300)
   clearPlot()

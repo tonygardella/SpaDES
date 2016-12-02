@@ -102,7 +102,7 @@ setMethod(
     )
 
     if (torus) {
-      return(wrap(X=agent, bounds = extent, withHeading = TRUE))
+      return(wrap(X = agent, bounds = extent, withHeading = TRUE))
     } else {
       return(agent)
     }
@@ -110,6 +110,7 @@ setMethod(
 
 #' @export
 #' @importFrom sp SpatialPointsDataFrame
+#' @importFrom stats setNames
 #' @rdname crw
 setMethod(
   "crw",
@@ -118,8 +119,8 @@ setMethod(
     n <- length(agent)
     agent <- SpatialPointsDataFrame(agent, data = data.frame(
       x1 = runif(n, -180, 180), y1 = runif(n, -180, 180)
-    ))
-    names(agent) <- c("x1", "y1")
+    )) %>%
+      setNames(c("x1", "y1"))
     agent <- crw(agent, extent = extent, stepLength = stepLength,
                  stddev = stddev, lonlat = lonlat, torus = torus)
     return(agent)

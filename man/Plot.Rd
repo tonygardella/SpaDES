@@ -264,14 +264,13 @@ library(rgdal)
 library(igraph)
 library(RColorBrewer)
 # Make list of maps from package database to load, and what functions to use to load them
-filelist <-
-   data.frame(files =
-     dir(file.path(
-       find.package("SpaDES", quiet = FALSE), "maps"),
-       full.names = TRUE, pattern= "tif"),
-     functions = "rasterToMemory",
-     packages = "SpaDES",
-     stringsAsFactors = FALSE)
+filelist <- data.frame(
+  files = dir(file.path(find.package("SpaDES", quiet = FALSE), "maps"),
+              full.names = TRUE, pattern= "tif"),
+  functions = "rasterToMemory",
+  packages = "SpaDES",
+  stringsAsFactors = FALSE
+)
 
 # Load files to memory (using rasterToMemory)
 mySim <- loadFiles(filelist = filelist)
@@ -281,15 +280,15 @@ landscape <- stack(mySim$DEM, mySim$forestCover, mySim$forestAge,
    mySim$habitatQuality, mySim$percentPine)
 
 # can change color palette
-setColors(landscape, n = 50) <- list(DEM=topo.colors(50),
+setColors(landscape, n = 50) <- list(DEM = topo.colors(50),
                            forestCover = brewer.pal(9, "Set1"),
-                           forestAge = brewer.pal("Blues", n=8),
+                           forestAge = brewer.pal("Blues", n = 8),
                            habitatQuality = brewer.pal(9, "Spectral"),
-                           percentPine = brewer.pal("GnBu", n=8))
+                           percentPine = brewer.pal("GnBu", n = 8))
 
 # Make a new raster derived from a previous one; must give it a unique name
-habitatQuality2 <- landscape$habitatQuality ^ 0.3
-names(habitatQuality2) <- "habitatQuality2"
+habitatQuality2 <- landscape$habitatQuality ^ 0.3 \%>\%
+  setNames("habitatQuality2")
 
 # make a SpatialPoints object
 caribou <- cbind(x = stats::runif (1e2, -50, 50), y = stats::runif (1e2, -50, 50)) \%>\%

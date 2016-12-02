@@ -45,8 +45,9 @@ if (interactive()) {
   # Or reload objects from files, useful if sim objects too large to store in RAM
   caribouMaps <- lapply(sims, function(sim) {
     caribou <- readRDS(outputs(sim)$file[outputs(sim)$objectName == "caribou"])
-  })
-  names(caribouMaps) <- paste0("caribou", 1:8)
+  }) %>%
+    setNames(paste0("caribou", 1:8))
+
   # Plot whole named list
   if (interactive()) Plot(caribouMaps, size = 0.1)
 
@@ -211,7 +212,7 @@ if (interactive()) {
 
   # Example 12 - pass in objects
   experimentObj <- list(landscape = lapply(landscapeFiles, readRDS) %>%
-                                    setNames(paste0("landscape",1:2)))
+                                    setNames(paste0("landscape", 1:2)))
   # Pass in this list of landscape objects
   sims <- experiment(mySimNoRL, objects = experimentObj)
 

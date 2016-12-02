@@ -36,8 +36,6 @@ How to load various types of files in R.
 This function has two roles: 1) to proceed with the loading of files that
 are in a simList or 2) as a short cut to simInit(inputs = filelist). Generally
 not to be used by a user.
-
-How to load various types of files in R.
 }
 \examples{
 \dontrun{

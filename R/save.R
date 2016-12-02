@@ -120,9 +120,9 @@ saveFiles <- function(sim) {
   curTime <- time(sim, sim@simtimes[["timeunit"]])
   # extract the current module name that called this function
   moduleName <- sim@current[["moduleName"]]
-  if(length(moduleName)==0) {
+  if (length(moduleName) == 0) {
     moduleName = "save" #modules(sim)
-    if(NROW(outputs(sim)[outputs(sim)$saveTime == curTime,])) {
+    if (NROW(outputs(sim)[outputs(sim)$saveTime == curTime, ])) {
       outputs(sim)[outputs(sim)$saveTime == curTime, "saved"] <- NA
     }
   }
@@ -174,11 +174,8 @@ saveFiles <- function(sim) {
   return(invisible(sim))
 }
 
-#' File extensions map
-#'
-#' How to load various types of files in R.
-#'
 #' @export
+#' @importFrom data.table setnames
 #' @rdname loadFiles
 .saveFileExtensions <- function() {
   .sFE <- data.frame(matrix(ncol = 3, byrow = TRUE, c(

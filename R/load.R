@@ -90,9 +90,10 @@ doEvent.load <- function(sim, eventTime, eventType, debug = FALSE) {
 #'
 #' @name loadFiles
 #' @include simulation-simInit.R
-#' @importFrom data.table data.table rbindlist ':='
-#' @importFrom stringi stri_detect_fixed
+#' @importFrom data.table ':=' data.table rbindlist
 #' @importFrom raster inMemory
+#' @importFrom stats setNames
+#' @importFrom stringi stri_detect_fixed
 # @importFrom utils getFromNamespace
 #' @export
 #' @docType methods
@@ -184,11 +185,11 @@ setMethod(
           if (is.na(filelist$file[y])) { # i.e., only for objects
             objList <- list()
             if (exists(filelist$objectName[y])) {
-              objList <- list(get(filelist$objectName[y]))
-              names(objList) <- filelist$objectName[y]
+              objList <- list(get(filelist$objectName[y])) %>%
+              setNames(filelist$objectName[y])
             } else {
-              objList2 <- .findObjects(filelist$objectName[y])
-              names(objList) <- filelist$objectName[y]
+              objList <- .findObjects(filelist$objectName[y]) %>%
+                setNames(filelist$objectName[y])
             }
             if (length(objList) > 0) {
               list2env(objList, envir = sim@.envir)
@@ -199,13 +200,14 @@ setMethod(
                       "To correctly transfer it to the simList, it should be ",
                       "in the search path.")
             }
-          } else { # for files
+          } else {
+            ## for files
             if (!is.null(nam)) {
-              argument <- list(unname(unlist(arguments[y])), filelist[y,"file"])
-              names(argument) <- c(nam, names(formals(getFromNamespace(loadFun[y], loadPackage[y])))[1])
+              argument <- list(unname(unlist(arguments[y])), filelist[y, "file"]) %>%
+                setNames(c(nam, names(formals(getFromNamespace(loadFun[y], loadPackage[y])))[1]))
             } else {
-              argument <- list(filelist[y,"file"])
-              names(argument) <- names(formals(getFromNamespace(loadFun[y], loadPackage[y])))[1]
+              argument <- list(filelist[y, "file"]) %>%
+                setNames(names(formals(getFromNamespace(loadFun[y], loadPackage[y])))[1])
             }
 
             # The actual load call
@@ -276,7 +278,7 @@ setMethod("loadFiles",
             message("no files loaded because sim and filelist are empty")
 })
 
-#######################################################
+################################################################################
 #' Read raster to memory
 #'
 #' Wrapper to the \code{raster} function, that creates the raster object in
