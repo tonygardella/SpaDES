@@ -221,7 +221,7 @@ mySim
 </div>
 <div id="running-a-simulation-the-spades-function" class="section level2">
 <h2><span class="header-section-number">3.2</span> Running a simulation: the <code>spades</code> function</h2>
-<p>Once a simulation is properly initialized it is executed using the <code>spades</code> function. By default in an interactive session, a progress bar is displayed in the console (this can be customized), and any specified files are loaded (via including an <code>input</code> <code>data.frame</code> or <code>data.table</code>, see examples). Debugging mode, <em>i.e.</em>, setting <code>spades(mySim, debug = TRUE)</code>, prints the contents of the <code>simList</code> object after the completion of every event during simulation. See the <a href="https://github.com/PredictiveEcology/SpaDES/wiki/Debugging">wiki entry on debugging</a> for more details on debugging SpaDES models.</p>
+<p>Once a simulation is properly initialized it is executed using the <code>spades</code> function. By default in an interactive session, a progress bar is displayed in the console (this can be customized), and any specified files are loaded (via including an <code>input</code> <code>data.frame</code> or <code>data.table</code>, see examples). Debugging mode, <em>i.e.</em>, setting <code>spades(mySim, debug=TRUE)</code>, prints the contents of the <code>simList</code> object after the completion of every event during simulation.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">options</span>(<span class="dt">spades.nCompleted =</span> <span class="dv">50</span>)   <span class="co"># default: store 1000 events in the completed event list</span>
 mySim &lt;-<span class="st"> </span><span class="kw">simInit</span>(...)             <span class="co"># initialize a simulation using valid parameters</span>
 mySim &lt;-<span class="st"> </span><span class="kw">spades</span>(mySim)            <span class="co"># run the simulation, returning the completed sim object</span>
@@ -270,15 +270,15 @@ mySim &lt;-<span class="st"> </span><span class="kw">spades</span>(mySim)       
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">?experiment <span class="co"># will give many more examples than here</span>
 
 <span class="co"># Copy Example 5 here:</span>
-mySim &lt;-<span class="st"> </span><span class="kw">simInit</span>(
-  <span class="dt">times =</span> <span class="kw">list</span>(<span class="dt">start =</span> <span class="fl">0.0</span>, <span class="dt">end =</span> <span class="fl">2.0</span>, <span class="dt">timeunit =</span> <span class="st">&quot;year&quot;</span>),
-  <span class="dt">params =</span> <span class="kw">list</span>(<span class="dt">.globals =</span> <span class="kw">list</span>(<span class="dt">burnStats =</span> <span class="st">&quot;nPixelsBurned&quot;</span>)),
-  <span class="dt">modules =</span> <span class="kw">list</span>(<span class="st">&quot;randomLandscapes&quot;</span>, <span class="st">&quot;fireSpread&quot;</span>, <span class="st">&quot;caribouMovement&quot;</span>),
-  <span class="dt">paths =</span> <span class="kw">list</span>(<span class="dt">modulePath =</span> <span class="kw">system.file</span>(<span class="st">&quot;sampleModules&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;SpaDES&quot;</span>),
-               <span class="dt">outputPath =</span> tmpdir),
-  <span class="co"># Save final state of landscape and caribou</span>
-  <span class="dt">outputs =</span> <span class="kw">data.frame</span>(<span class="dt">objectName =</span> <span class="kw">c</span>(<span class="st">&quot;landscape&quot;</span>, <span class="st">&quot;caribou&quot;</span>), <span class="dt">stringsAsFactors =</span> <span class="ot">FALSE</span>)
-)
+ mySim &lt;-<span class="st"> </span><span class="kw">simInit</span>(
+    <span class="dt">times =</span> <span class="kw">list</span>(<span class="dt">start =</span> <span class="fl">0.0</span>, <span class="dt">end =</span> <span class="fl">2.0</span>, <span class="dt">timeunit =</span> <span class="st">&quot;year&quot;</span>),
+    <span class="dt">params =</span> <span class="kw">list</span>(<span class="dt">.globals =</span> <span class="kw">list</span>(<span class="dt">stackName =</span> <span class="st">&quot;landscape&quot;</span>, <span class="dt">burnStats =</span> <span class="st">&quot;nPixelsBurned&quot;</span>)),
+    <span class="dt">modules =</span> <span class="kw">list</span>(<span class="st">&quot;randomLandscapes&quot;</span>, <span class="st">&quot;fireSpread&quot;</span>, <span class="st">&quot;caribouMovement&quot;</span>),
+    <span class="dt">paths =</span> <span class="kw">list</span>(<span class="dt">modulePath =</span> <span class="kw">system.file</span>(<span class="st">&quot;sampleModules&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;SpaDES&quot;</span>),
+                 <span class="dt">outputPath =</span> tmpdir),
+    <span class="co"># Save final state of landscape and caribou</span>
+    <span class="dt">outputs =</span> <span class="kw">data.frame</span>(<span class="dt">objectName =</span> <span class="kw">c</span>(<span class="st">&quot;landscape&quot;</span>, <span class="st">&quot;caribou&quot;</span>), <span class="dt">stringsAsFactors =</span> <span class="ot">FALSE</span>)
+  )
 
 sims &lt;-<span class="st"> </span><span class="kw">experiment</span>(mySim, <span class="dt">replicates =</span> <span class="dv">2</span>)
 <span class="kw">attr</span>(sims, <span class="st">&quot;experiment&quot;</span>)$expDesign <span class="co"># shows 2 replicates of same experiment</span></code></pre></div>
@@ -307,7 +307,7 @@ sims &lt;-<span class="st"> </span><span class="kw">experiment</span>(mySim, <sp
 </div>
 <div id="wiki" class="section level3">
 <h3><span class="header-section-number">6.1.4</span> Wiki</h3>
-<p>Additional guides for getting started with <code>SpaDES</code> and debugging are provided at our wiki:</p>
+<p>Additional guides for getting started with <code>SpaDES</code> are provided at our wiki:</p>
 <p><a href="https://github.com/PredictiveEcology/SpaDES/wiki" class="uri">https://github.com/PredictiveEcology/SpaDES/wiki</a></p>
 </div>
 <div id="qa-forum" class="section level3">
