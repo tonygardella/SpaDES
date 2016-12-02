@@ -169,7 +169,7 @@
 #' @include environment.R
 #' @include priority.R
 #' @importFrom DEoptim DEoptim DEoptim.control
-#' @importFrom stats optim
+#' @importFrom stats optim setNames
 #' @importFrom raster getCluster returnCluster
 #' @importFrom parallel clusterEvalQ clusterExport
 #' @export
@@ -216,10 +216,10 @@ setMethod(
     whParams <- lapply(paramNames, function(pn) match(params, pn))
     whModules <- unlist(lapply(whParams, function(mod) any(!is.na(mod))))
 
-    whParamsByMod <- unlist(lapply(whParams, na.omit))
-    names(whParamsByMod) <- unlist(lapply(names(whModules), function(nam) {
-      rep(nam, sum(grepl(pattern = nam, names(whParamsByMod))))
-    }))
+    whParamsByMod <- unlist(lapply(whParams, na.omit)) %>%
+      setNames(unlist(lapply(names(whModules), function(nam) {
+        rep(nam, sum(grepl(pattern = nam, names(whParamsByMod))))
+    })))
 
     if (missing(objects)) {
       objects <- NULL

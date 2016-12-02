@@ -43,29 +43,32 @@ defineModule(sim, list(
 
 ## event types
 doEvent <- function(sim, eventTime, eventType, debug = FALSE) {
-  if (eventType == "init") {
-    # do stuff for this event
-    sim <- sim$init(sim)
+  switch(
+    eventType,
+    init = {
+      # do stuff for this event
+      sim <- sim$init(sim)
 
-    # schedule the next events
-    sim <- scheduleEvent(sim, P(sim)$.plotInitialTime, "randomLandscapes", "plot", .last())
-    sim <- scheduleEvent(sim, P(sim)$.saveInitialTime, "randomLandscapes", "save", .last() + 1)
-  } else if (eventType == "plot") {
-    # do stuff for this event
-    Plot(sim[[P(sim)$stackName]])
+      # schedule the next events
+      sim <- scheduleEvent(sim, P(sim)$.plotInitialTime, "randomLandscapes", "plot", .last())
+      sim <- scheduleEvent(sim, P(sim)$.saveInitialTime, "randomLandscapes", "save", .last() + 1)
+    },
+    plot = {
+      # do stuff for this event
+      Plot(sim[[P(sim)$stackName]])
+    },
+    save = {
+      # do stuff for this event
+      sim <- saveFiles(sim)
 
-  } else if (eventType == "save") {
-    # do stuff for this event
-    sim <- saveFiles(sim)
-
-    # schedule the next event
-    sim <- scheduleEvent(sim, time(sim) + P(sim)$.saveInterval, "randomLandscapes", "save", .last() + 1)
-  } else {
+      # schedule the next event
+      sim <- scheduleEvent(sim, time(sim) + P(sim)$.saveInterval, "randomLandscapes", "save", .last() + 1)
+    },
     warning(
       paste("Undefined event type: \'", events(sim)[1, "eventType", with = FALSE],
             "\' in module \'", events(sim)[1, "moduleName", with = FALSE] , "\'", sep = "")
     )
-  }
+  )
   return(invisible(sim))
 }
 
@@ -99,13 +102,13 @@ init <- function(sim) {
   habitatQuality <- habitatQuality/maxValue(habitatQuality)
 
   # Stack them into a single stack and assign to global env
-  mapStack <- stack(DEM, forestAge, habitatQuality, percentPine)
-  names(mapStack) <- c("DEM", "forestAge", "habitatQuality", "percentPine")
+  mapStack <- stack(DEM, forestAge, habitatQuality, percentPine) %>%
+    stats::setNames(c("DEM", "forestAge", "habitatQuality", "percentPine"))
 
   setColors(mapStack) <- list(DEM = grDevices::terrain.colors(100),
-                              forestAge = brewer.pal(9,"BuGn"),
-                              habitatQuality = brewer.pal(8,"Spectral"),
-                              percentPine = brewer.pal(9,"Greens"))
+                              forestAge = brewer.pal(9, "BuGn"),
+                              habitatQuality = brewer.pal(8, "Spectral"),
+                              percentPine = brewer.pal(9, "Greens"))
   sim[[P(sim)$stackName]] <- mapStack
   return(invisible(sim))
 }

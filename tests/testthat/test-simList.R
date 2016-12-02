@@ -209,10 +209,10 @@ test_that("simList test all signatures", {
         {if (ceiling(i/32) %% 2 == 0) inputs = filelist},
         {if (ceiling(i/64) %% 2 == 0) outputs = outputs},
         {if (ceiling(i/128) %% 2 == 0) loadOrder = loadOrder}
-      )
-      argNames <- c("times", "params", "modules", "objects", "paths", "inputs",
-                    "outputs", "loadOrder")
-      names(li) <- argNames
+      ) %>%
+        setNames(c("times", "params", "modules", "objects", "paths", "inputs",
+                   "outputs", "loadOrder"))
+
       li <- li[!sapply(li, is.null)]
       successes[i] <- tryCatch(
         is(do.call(simInit, args = li), "simList"),
