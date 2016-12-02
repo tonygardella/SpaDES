@@ -66,8 +66,7 @@ setMethod(
   ),
   definition = function(filename, defineModuleElement) {
     parsedFile <- parse(filename)
-    defineModuleItem <-
-      grepl(pattern = "defineModule", parsedFile)
+    defineModuleItem <- grepl(pattern = "defineModule", parsedFile)
     pf <- parsedFile[defineModuleItem]
 
     namesParsedList <- names(parsedFile[defineModuleItem][[1]][[3]])
