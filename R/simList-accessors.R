@@ -324,8 +324,22 @@ setReplaceMethod(
   "objs",
   signature = "simList",
   function(sim, value) {
+
     if (is.list(value)) {
-      list2env(value, envir = sim@.envir)
+      if(!is.environment(sim@.envir$load)) {
+        sim@.envir$load <- new.env(parent = sim@.envir)
+      }
+
+      tmpCurrent <- NULL
+      if(NROW(sim@current)==0) {
+        sim@current <- .singleEventListDT
+        sim@current[["moduleName"]] <- "load"
+        tmpCurrent <- TRUE
+      }
+      lapply(seq_along(value), function(i)
+        sim[[names(value)[i]]] <<- value[[i]]
+      )
+      #list2env(value, envir = sim@.envir)
       newInputs <- data.frame(
         objectName = names(value),
         loadTime = as.numeric(sim@simtimes[["current"]]),
