@@ -71,7 +71,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h1 class="title toc-ignore">01 Introduction to <code>SpaDES</code></h1>
 <h4 class="author"><em>Alex M. Chubaty</em></h4>
 <h4 class="author"><em>Eliot J. B. McIntire</em></h4>
-<h4 class="date"><em>December 05 2016</em></h4>
+<h4 class="date"><em>December 06 2016</em></h4>
 
 
 <div id="TOC">
@@ -270,15 +270,15 @@ mySim &lt;-<span class="st"> </span><span class="kw">spades</span>(mySim)       
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">?experiment <span class="co"># will give many more examples than here</span>
 
 <span class="co"># Copy Example 5 here:</span>
-mySim &lt;-<span class="st"> </span><span class="kw">simInit</span>(
-  <span class="dt">times =</span> <span class="kw">list</span>(<span class="dt">start =</span> <span class="fl">0.0</span>, <span class="dt">end =</span> <span class="fl">2.0</span>, <span class="dt">timeunit =</span> <span class="st">&quot;year&quot;</span>),
-  <span class="dt">params =</span> <span class="kw">list</span>(<span class="dt">.globals =</span> <span class="kw">list</span>(<span class="dt">burnStats =</span> <span class="st">&quot;nPixelsBurned&quot;</span>)),
-  <span class="dt">modules =</span> <span class="kw">list</span>(<span class="st">&quot;randomLandscapes&quot;</span>, <span class="st">&quot;fireSpread&quot;</span>, <span class="st">&quot;caribouMovement&quot;</span>),
-  <span class="dt">paths =</span> <span class="kw">list</span>(<span class="dt">modulePath =</span> <span class="kw">system.file</span>(<span class="st">&quot;sampleModules&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;SpaDES&quot;</span>),
-               <span class="dt">outputPath =</span> tmpdir),
-  <span class="co"># Save final state of landscape and caribou</span>
-  <span class="dt">outputs =</span> <span class="kw">data.frame</span>(<span class="dt">objectName =</span> <span class="kw">c</span>(<span class="st">&quot;landscape&quot;</span>, <span class="st">&quot;caribou&quot;</span>), <span class="dt">stringsAsFactors =</span> <span class="ot">FALSE</span>)
-)
+ mySim &lt;-<span class="st"> </span><span class="kw">simInit</span>(
+    <span class="dt">times =</span> <span class="kw">list</span>(<span class="dt">start =</span> <span class="fl">0.0</span>, <span class="dt">end =</span> <span class="fl">2.0</span>, <span class="dt">timeunit =</span> <span class="st">&quot;year&quot;</span>),
+    <span class="dt">params =</span> <span class="kw">list</span>(<span class="dt">.globals =</span> <span class="kw">list</span>(<span class="dt">stackName =</span> <span class="st">&quot;landscape&quot;</span>, <span class="dt">burnStats =</span> <span class="st">&quot;nPixelsBurned&quot;</span>)),
+    <span class="dt">modules =</span> <span class="kw">list</span>(<span class="st">&quot;randomLandscapes&quot;</span>, <span class="st">&quot;fireSpread&quot;</span>, <span class="st">&quot;caribouMovement&quot;</span>),
+    <span class="dt">paths =</span> <span class="kw">list</span>(<span class="dt">modulePath =</span> <span class="kw">system.file</span>(<span class="st">&quot;sampleModules&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;SpaDES&quot;</span>),
+                 <span class="dt">outputPath =</span> tmpdir),
+    <span class="co"># Save final state of landscape and caribou</span>
+    <span class="dt">outputs =</span> <span class="kw">data.frame</span>(<span class="dt">objectName =</span> <span class="kw">c</span>(<span class="st">&quot;landscape&quot;</span>, <span class="st">&quot;caribou&quot;</span>), <span class="dt">stringsAsFactors =</span> <span class="ot">FALSE</span>)
+  )
 
 sims &lt;-<span class="st"> </span><span class="kw">experiment</span>(mySim, <span class="dt">replicates =</span> <span class="dv">2</span>)
 <span class="kw">attr</span>(sims, <span class="st">&quot;experiment&quot;</span>)$expDesign <span class="co"># shows 2 replicates of same experiment</span></code></pre></div>
