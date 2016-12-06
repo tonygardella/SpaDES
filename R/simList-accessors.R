@@ -326,6 +326,7 @@ setReplaceMethod(
   function(sim, value) {
 
     if (is.list(value)) {
+      browser()
       if(!is.environment(sim@.envir$load)) {
         sim@.envir$load <- new.env(parent = sim@.envir)
       }
@@ -348,6 +349,10 @@ setReplaceMethod(
       ) %>%
         .fillInputRows(startTime = start(sim))
       inputs(sim) <- rbind(inputs(sim), newInputs)
+      if(!is.null(tmpCurrent)) {
+        sim@current <- .emptyEventListDT
+      }
+
     } else {
      stop("must provide a named list.")
     }
@@ -385,6 +390,7 @@ setReplaceMethod(
   "[[",
   signature(x = "simList", value = "ANY"),
   definition = function(x, i, value) {
+    browser()
     module <- x@current[["moduleName"]]
     if ( (length(module) > 0) && is.null(x@depends@.allObjNames[[i]]) ) {
         assign(i, value, envir = x@.envir[[module]], inherits = FALSE)

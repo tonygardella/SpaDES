@@ -78,7 +78,8 @@ test_that("test-load.R: loading inputs does not work correctly", {
         inputPath = mapPath,
         outputPath = file.path(tmpdir, rndstr()))
     )
-    expect_true(all(c("DEM", "forestAge") %in% ls(sim1)))
+    expect_true(all(c("DEM", "forestAge") %in%
+                      unlist(ls(sim1, all.names=TRUE))))
     rm(sim1)
 
     # load at future time, i.e., nothing gets loaded
@@ -105,8 +106,8 @@ test_that("test-load.R: loading inputs does not work correctly", {
     mySim <- simInit(times = times, params = parameters, modules = modules,
                      paths = paths, inputs = inputs)
 
-    expect_true(c("DEM") %in% ls(mySim))
-    expect_true(!any(c("forestAge") %in% ls(mySim)))
+    expect_true(c("DEM") %in% unlist(ls(mySim, all.names = TRUE)))
+    expect_true(!any(c("forestAge") %in% unlist(ls(mySim, all.names = TRUE))))
     rm(mySim)
   }
 })
@@ -159,7 +160,7 @@ test_that("test-load.R: passing arguments to filelist in simInit does not work c
     expect_true(all(c("DEM", "forestAge", "forestCover") %in% unlist(ls(sim2, all.names = TRUE))))
     expect_true(!any(c("habitatQuality") %in% ls(sim2)))
 
-    rm(forestAge, envir = envir(sim2))
+    rm(forestAge, envir = sim2@.envir$load)
     expect_true(!("forestAge" %in% ls(sim2)))
 
     end(sim2) <- 2
@@ -170,7 +171,8 @@ test_that("test-load.R: passing arguments to filelist in simInit does not work c
     expect_message(spades(sim2), "habitatQuality read from")
     expect_message(spades(sim2), "forestCover")
     expect_message(spades(sim2), "forestAge")
-    expect_true(all(c("DEM", "forestAge", "forestCover") %in% ls(sim2)))
+    expect_true(all(c("DEM", "forestAge", "forestCover") %in%
+                      unlist(ls(sim2, all.names = TRUE))))
     rm(sim2)
   }
 })
@@ -214,21 +216,24 @@ test_that("test-load.R: passing objects to simInit does not work correctly", {
     objects <- list(DEM = DEM, forestAge = forestAge)
     sim3 <- simInit(times = times, params = parameters, modules = modules,
                     paths = paths, objects  =  objects)
-    expect_true(all(c("DEM", "forestAge") %in% ls(sim3)))
+    expect_true(all(c("DEM", "forestAge") %in%
+                      unlist(ls(sim3, all.names=TRUE))))
     rm(sim3)
 
     # pass as character vector
     objects <- c("DEM", "forestAge")
     sim4 <- simInit(times = times, params = parameters, modules = modules,
                     paths = paths, objects = objects)
-    expect_true(all(c("DEM", "forestAge") %in% ls(sim4)))
+    expect_true(all(c("DEM", "forestAge") %in% unlist(ls(sim4,
+                                                         all.names=TRUE))))
     rm(sim4)
 
     # pass both inputs and objects
     objects <- c("DEM")
     sim5 <- simInit(times = times, params = parameters, modules = modules,
                     paths = paths, objects = objects, inputs = filelist[-1,])
-    expect_true(all(c("DEM", "forestAge") %in% ls(sim5)))
+    expect_true(all(c("DEM", "forestAge") %in%
+                      unlist(ls(sim5, all.names = TRUE))))
     rm(sim5)
 
     # pass both inputs (at non-start time) and objects
@@ -243,10 +248,10 @@ test_that("test-load.R: passing objects to simInit does not work correctly", {
     objects <- c("DEM")
     sim6 <- simInit(times = times, params = parameters, modules = modules,
                     paths = paths, objects = objects, inputs = filelist)
-    expect_true(all(c("DEM") %in% ls(sim6)))
-    expect_false(all(c("forestAge") %in% ls(sim6)))
+    expect_true(all(c("DEM") %in% unlist(ls(sim6, all.names=TRUE))))
+    expect_false(all(c("forestAge") %in% unlist(ls(sim6, all.names=TRUE))))
     sim6End <- spades(sim6) # run for 1 time, loading the file
-    expect_true(all(c("forestAge") %in% ls(sim6End)))
+    expect_true(all(c("forestAge") %in% unlist(ls(sim6End, all.names=TRUE))))
     rm(sim6)
   }
 })
@@ -271,7 +276,7 @@ test_that("test-load.R: passing nearly empty file to simInit does not work corre
 
     sim3 <- simInit(inputs = filelist)
 
-    expect_true(all(c("DEM", "forestAge") %in% ls(sim3)))
+    expect_true(all(c("DEM", "forestAge") %in% unlist(ls(sim3, all.names=TRUE))))
     rm(sim3)
   }
 })
