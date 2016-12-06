@@ -8,9 +8,9 @@
 \alias{objects.simList}
 \title{List simulation objects}
 \usage{
-ls.simList(name)
+ls.simList(name, all.names)
 
-\S4method{ls}{simList}(name)
+\S4method{ls}{simList}(name, all.names)
 
 objects.simList(name)
 
@@ -18,6 +18,10 @@ objects.simList(name)
 }
 \arguments{
 \item{name}{A \code{simList} object.}
+
+\item{all.names}{A logical. If TRUE, will show a nested list of objects, inside each module.
+If FALSE, then will only show the highest level objects, i.e.,
+the "shared" objects among modules.}
 }
 \description{
 Return a vector of character strings giving the names of the objects in the

@@ -216,10 +216,10 @@ setMethod(
     whParams <- lapply(paramNames, function(pn) match(params, pn))
     whModules <- unlist(lapply(whParams, function(mod) any(!is.na(mod))))
 
-    whParamsByMod <- unlist(lapply(whParams, na.omit)) %>%
-      setNames(unlist(lapply(names(whModules), function(nam) {
+    whParamsByMod <- unlist(lapply(whParams, na.omit)) #%>%
+    names(whParamsByMod) <- unlist(lapply(names(whModules), function(nam) {
         rep(nam, sum(grepl(pattern = nam, names(whParamsByMod))))
-    })))
+    }))
 
     if (missing(objects)) {
       objects <- NULL

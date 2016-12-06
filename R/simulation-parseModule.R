@@ -166,7 +166,7 @@ setMethod(
       if (length(RScript) > 0) {
         for (Rfiles in RScript) {
           parsedFile1 <- parse(file.path(RSubFolder, Rfiles))
-          eval(parsedFile1, envir = sim@.envir)
+          eval(parsedFile1, envir = sim@.envir[[m]])
         }
       }
 
@@ -221,9 +221,20 @@ setMethod(
       # If user supplies the needed objects, then test whether all are supplied.
       # If they are all supplied, then skip the .inputObjects code
       if (!all(sim@depends@dependencies[[i]]@inputObjects$objectName %in% userSuppliedObjNames)) {
-        if (!is.null(sim@.envir$.inputObjects)) {
-          sim <- sim@.envir$.inputObjects(sim)
-          rm(".inputObjects", envir = sim@.envir)
+        if (!is.null(sim@.envir[[m]][[".inputObjects"]])) {
+          # This is sort of a work around to ensure there is a current
+          # module context for the .inputObjects fn call
+          sim@depends@.allObjNames <- .findAllObjNames(sim)
+          
+          sim@current <- .singleEventListDT 
+          sim@current[["moduleName"]] <- m
+          
+          # Call .inputObjects function from module
+          sim <- sim@.envir[[m]][[".inputObjects"]](sim)
+          #rm(".inputObjects", envir = sim@.envir[[m]]) # not necessary b/c all fns are now in separate envirs
+          
+          # reset "work around"
+          sim@current <- .emptyEventListDT
         }
       }
     }

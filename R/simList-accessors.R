@@ -108,22 +108,36 @@ setMethod(
 #' stored in the \code{simList} object.
 #'
 #' @param name  A \code{simList} object.
+#' @param all.names A logical. If TRUE, will show a nested list of objects, inside each module.
+#'                  If FALSE, then will only show the highest level objects, i.e.,
+#'                  the "shared" objects among modules.
 #'
 #' @export
 #' @include simList-class.R
 #' @docType methods
 #' @rdname ls-method
 #' @family functions to access elements of a \code{simList} object
-ls.simList <- function(name) {
-  ls(envir(name))
+ls.simList <- function(name, all.names) {
+  if(all.names) {
+    isEnv <- unlist(lapply(ls(name@.envir), function(x)
+      is.environment(name@.envir[[x]])))
+    outList <- lapply(ls(name@.envir)[isEnv], function(x)
+      ls(name@.envir[[x]]))
+    names(outList) <- ls(name@.envir)[isEnv]
+    outList <- append(list(ls(name@.envir)[!isEnv]), outList)
+    names(outList)[1] <- ".shared"
+  } else {
+    outList <- ls(envir(name))
+  }
+  return(outList)
 }
 
 #' @export
 #' @rdname ls-method
 setMethod("ls",
           signature(name = "simList"),
-          definition = function(name) {
-            ls.simList(name)
+          definition = function(name, all.names) {
+              ls.simList(name, all.names)
 })
 
 #' @rdname ls-method
@@ -156,24 +170,38 @@ setMethod("objects",
 #' @rdname ls_str-method
 #' @family functions to access elements of a \code{simList} object
 #'
-ls.str.simList <- function(name) {
-  ls.str(name@.envir)
+ls.str.simList <- function(name, all.names = FALSE) {
+  if(all.names) {
+    isEnv <- unlist(lapply(ls(name@.envir), function(x)
+      is.environment(name@.envir[[x]])))
+    outList <- lapply(ls(name@.envir)[isEnv], function(x)
+      ls.str(name@.envir[[x]]))
+    names(outList) <- ls(name@.envir)[isEnv]
+
+    outList <- append(list(ls.str(name@.envir)), outList)
+    names(outList)[1] <- ".shared"
+  } else {
+    outList <- ls.str(envir(name))
+  }
+  return(outList)
+
 }
 
 #' export
 #' @rdname ls_str-method
 setMethod("ls.str",
           signature(pos = "missing", name = "simList"),
-          definition = function(name) {
-            ls.str.simList(name)
+          definition = function(name, all.names = FALSE) {
+            browser()
+            ls.str.simList(name = name, all.names = all.names)
 })
 
 #' @export
 #' @rdname ls_str-method
 setMethod("ls.str",
           signature(pos = "simList", name = "missing"),
-          definition = function(pos) {
-            ls.str.simList(pos)
+          definition = function(pos, all.names) {
+            ls.str.simList(pos, all.names = all.names)
 })
 
 ################################################################################
@@ -1195,7 +1223,7 @@ setReplaceMethod(
       }
     }
 
-    sim <- .findAllObjNames(sim)
+    sim@depends@.allObjNames <- .findAllObjNames(sim)
     validObject(sim, complete = TRUE)
     return(sim)
 })
@@ -1441,7 +1469,7 @@ setReplaceMethod(
                  paste(.fileTableOutCols, collapse = ", ")))
     }
 
-    sim <- .findAllObjNames(sim)
+    sim@depends@.allObjNames <- .findAllObjNames(sim)
     validObject(sim, complete = TRUE)
     return(sim)
 })

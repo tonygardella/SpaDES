@@ -29,7 +29,7 @@ setMethod(
     namesAll <- list()
 
     ## get object names from modules
-    namesAll <- lapply(sim@depends@dependencies, function(m) {
+    lapply(sim@depends@dependencies, function(m) {
       if (!is.null(m)) {
         x <- m@inputObjects$objectName
         lapply(x, function(n) {
@@ -52,9 +52,10 @@ setMethod(
     ## store names to .allObjNames
     names(namesAll) <- namesAll
     namesAll <- as.list(namesAll)
-    sim@depends@.allObjNames <- namesAll
+    return(namesAll)
+    #sim@depends@.allObjNames <- namesAll
 
-    return(sim)
+    #return(sim)
 })
 
 ################################################################################
@@ -553,7 +554,7 @@ setMethod(
     }
 
     # rebuild the list of shared data object names
-    sim <- .findAllObjNames(sim)
+    sim@depends@.allObjNames <- .findAllObjNames(sim)
 
     # check the parameters supplied by the user
     checkParams(sim, core, dotParams, sim@paths[['modulePath']])

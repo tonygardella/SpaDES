@@ -149,14 +149,14 @@ test_that("test-load.R: passing arguments to filelist in simInit does not work c
     on.exit(detach("package:rgdal"), add = TRUE)
     sim2 <- simInit(times = times, params = parameters, modules = modules,
                     paths = paths, inputs = inputs)
-    expect_true(c("DEM") %in% ls(sim2))
+    expect_true(c("DEM") %in% unlist(ls(sim2, all.names = TRUE)))
 
     # Test that arguments got passed in correctly
     expect_equal(inputs(sim2)$arguments, I(rep(list(native = TRUE), 4)))
     expect_true(!any(c("forestCover", "forestAge", "habitatQuality") %in% ls(sim2)))
 
     sim2 <- spades(sim2)
-    expect_true(all(c("DEM", "forestAge", "forestCover") %in% ls(sim2)))
+    expect_true(all(c("DEM", "forestAge", "forestCover") %in% unlist(ls(sim2, all.names = TRUE))))
     expect_true(!any(c("habitatQuality") %in% ls(sim2)))
 
     rm(forestAge, envir = envir(sim2))

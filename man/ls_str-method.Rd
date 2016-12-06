@@ -7,11 +7,11 @@
 \alias{ls.str.simList}
 \title{List simulation objects and their structure}
 \usage{
-ls.str.simList(name)
+ls.str.simList(name, all.names = FALSE)
 
-\S4method{ls.str}{missing,simList}(name)
+\S4method{ls.str}{missing,simList}(name, all.names = FALSE)
 
-\S4method{ls.str}{simList,missing}(pos)
+\S4method{ls.str}{simList,missing}(pos, all.names)
 }
 \arguments{
 \item{name}{A \code{simList} object.}

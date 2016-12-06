@@ -150,6 +150,10 @@ setMethod(
     .fileExts = .fileExtensions()
 
     if (NROW(inputs(sim)) != 0) {
+      if(!is.environment(sim@.envir$load)) {
+        sim@.envir$load <- new.env(parent = sim@.envir)
+      }
+
       inputs(sim) <- .fillInputRows(inputs(sim), start(sim))
       filelist <- inputs(sim) # does not create a copy - because data.table ... this is a pointer
 
@@ -175,6 +179,13 @@ setMethod(
       cur <- (filelist$loadTime == curTime) & !(sapply(filelist$loaded, isTRUE))
 
       if (any(cur)) {
+        tmpCurrent <- NULL
+        if(NROW(sim@current)==0) {
+          sim@current <- .singleEventListDT
+          sim@current[["moduleName"]] <- "load"
+          tmpCurrent <- TRUE
+        }
+
         # load files
         loadPackage <- filelist$package
         loadFun <- filelist$fun
@@ -218,6 +229,7 @@ setMethod(
             } else {
               sim[[filelist[y, "objectName"]]] <- do.call(getFromNamespace(loadFun[y], loadPackage[y]),
                                                           args = argument)
+
             }
             filelist[y, "loaded"] <- TRUE
 
@@ -235,6 +247,10 @@ setMethod(
                        paste("\n   at time", filelist[y, "loadTime"]), "")
               ))
             }
+            if(!is.null(tmpCurrent)) {
+              sim@current <- .emptyEventListDT
+            }
+
           }
         } # end y
         # add new rows of files to load based on filelistDT$Interval
@@ -257,6 +273,7 @@ setMethod(
         stop("filelist must be either a list or data.frame")
       }
     }
+
     return(invisible(sim))
 })
 
