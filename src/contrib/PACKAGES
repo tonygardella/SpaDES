@@ -1,0 +1,19 @@
+Package: SpaDES
+Version: 1.3.1.9017
+Depends: R (>= 3.2.2)
+Imports: archivist (>= 2.1), chron, CircStats, data.table
+      (>= 1.9.6), DEoptim (>= 2.2-3), DiagrammeR (>=
+      0.8.2), digest, dplyr (>= 0.5.0), DT, fastmatch, ff,
+      ffbase, fpCompare, ggplot2, graphics, grDevices,
+      grid, gridBase, httr, igraph (>= 1.0.1), lazyeval,
+      lubridate (>= 1.3.3), methods, miniUI (>= 0.1.1),
+      parallel, R.utils, RandomFields (>= 3.1.24), raster,
+      RColorBrewer, rstudioapi (>= 0.5), shiny (>= 0.13),
+      stats, sp, stringi, stringr, utils
+Suggests: covr, fastshp, knitr, Matrix, png, rgdal,
+      rgenoud, rmarkdown, snow, tcltk, testthat (>=
+      1.0.2), tkrplot
+License: GPL-3
+MD5sum: c3ff95f12b8d63c51cb0c860b47ea02d
+NeedsCompilation: yes
+
