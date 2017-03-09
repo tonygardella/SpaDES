@@ -43,7 +43,7 @@ Included are numerous tools to rapidly visualize raster and other maps.
 
 **Proof of concept:** [https://spades.shinyapps.io/ForestChange_ProofOfConcept](https://spades.shinyapps.io/ForestChange_ProofOfConcept)
 
-[**LandWeb Demonstration App**](http://52.89.34.122:3838/LandWebDemo)
+[**LandWeb Demonstration App** LandWeb Demonstration App](http://52.89.34.122:3838/LandWebDemo)
 
 **Example Model for R-savvy users** [LandCoverChange](https://raw.githubusercontent.com/PredictiveEcology/SpaDES-modules/master/modules/LCC2005/LCC2005.Rmd). Copy the linked `.Rmd` file to your computer. Open it with a text editor (such as Rstudio), run all chunks in R. It is not intended to be knitted; knitting will only output the script. 
 
