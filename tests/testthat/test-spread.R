@@ -1199,3 +1199,33 @@ test_that("spreadProb with relative values does not work correctly", {
   # many more high value hab pixels spread to in event1
   expect_true(sum(hab3[events1[] > 0]) > sum(hab3[events2[] > 0]))
 })
+
+
+test_that("spread produces legal RasterLayer", {
+
+  library(raster); on.exit(detach("package:raster"), add = TRUE)
+
+  # inputs for x
+  a <- raster(extent(0, 6 , 0, 6), res = 1)
+  #seed <- sample(1e4,1)
+  set.seed(5835)
+  #print(seed)
+  a <- randomPolygons(a, numTypes = 4)
+  clearPlot()
+  Plot(a, new=T)
+  # check it makes a RasterLayer
+  b <- spread(a, loci = 2, spreadProb = a<=2, maxSize = 3, exactSize = TRUE, id = TRUE)
+  expect_true(sum(b[])==3) # exactSize = 3
+  expect_true(all(a[b[]==1] <= 2)) # all values are below 3 (because spreadProb was like that)
+  expect_true(length(na.omit(unique(clump(b)[])))==2) # it jumped
+
+
+  b <- spread(a, loci = 2, spreadProb = a<=2, maxSize = 3, exactSize = TRUE, id = TRUE, iterations = 2,
+              returnIndices = TRUE)
+  b1 <- spread(a, spreadState = b, spreadProb = a<=2, maxSize = 3, exactSize = TRUE, id = TRUE, returnIndices = TRUE)
+  expect_true(sum(b[])==3) # exactSize = 3
+  expect_true(all(a[b[]==1] <= 2)) # all values are below 3 (because spreadProb was like that)
+  expect_true(length(na.omit(unique(clump(b)[])))==2) # it jumped
+
+
+})

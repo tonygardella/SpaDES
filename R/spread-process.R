@@ -375,13 +375,19 @@ setMethod(
       }
     }
 
+    browser()
     if (spreadStateExists) {
       keepers <- spreadState$active==TRUE
       loci <- initialActiveCells <- spreadState[keepers, indices]
       #loci <- loci[!(loci %fin% spreadState[, indices])] # keep these for later
       initialLoci <- unique(spreadState$initialLocus)
+      numRetries <- attr(spreadState, "numRetries")
+      retryLoci <- attr(spreadState, "retryLoci")
+      loci <- retryLoci
     } else {
       initialLoci <- loci
+      numRetries <- rep(0, length(initialLoci))
+      retryLoci <- NULL
     }
 
     # Check for probabilities
@@ -582,9 +588,6 @@ setMethod(
       numNeighs <- NULL
     }
 
-    if(!exists("numRetries", envir = .spadesEnv))
-      assign("numRetries", rep(0, length(initialLoci)), envir = .spadesEnv)
-
     toColumn <- c("to", "indices")
 
     # while there are active cells
@@ -618,6 +621,24 @@ setMethod(
                                       #numNeighs=numNeighs))
         }
       }
+
+      if(!is.null(retryLoci)) {
+        browser()
+        message("Jumping to new active location, up to ",4*res(landscape)[1],"m away")
+        mmm <- SpaDES::rings(landscape, loci = retryLoci,
+                               maxRadius = 4*res(landscape)[1], minRadius = res(landscape)[1],
+                             returnIndices = TRUE)
+        wh <- mmm[mmm[,list(whKeepLoci=resample(.I, directions)),by=id]$whKeepLoci,]$indices
+        if (allowOverlap | returnDistances | spreadStateExists) {
+          potentials <- rbind(potentials, cbind(from = retryLoci, to = wh,
+                                                active = 1))
+        } else {
+          potentials <- rbind(potentials, cbind(from = retryLoci, to = wh))
+
+        }
+        retryLoci <- NULL
+      }
+
 
       if (circle)
         potentials <- cbind(potentials, dists = 0)
@@ -783,10 +804,11 @@ setMethod(
         potentials <- potentials[!duplicated(potentials[, 2L]), , drop = FALSE]
       }
 
+
       # increment iteration
       n <- n + 1L
 
-      if (length(potentials) > 0) {# potentials can become zero because all active cells are edge cells
+      if( (length(potentials) > 0) | (exactSizes & (any(size > maxSize) | (size < maxSize) ))) {# potentials can become zero because all active cells are edge cells
         # implement circle
         if (!missing(circle)) {
           if (circle) {
@@ -847,6 +869,8 @@ setMethod(
           # which ones were removed
           #size[whichID] <- size[whichID] - toRm
           size <- pmin(size + len, maxSize) ## Quick? and dirty. fast but loose (too flexible)
+
+
         }
 
         # Implement stopRule section
@@ -1009,52 +1033,34 @@ setMethod(
           }
         }
       } else { # there are no potentials -- possibly from failed runif, or spreadProbs all 0
-        events <- NULL
+        #events <- NULL
+        events
       }
 
-      if (exactSizes) {
-        if (all(get("numRetries", inherits = FALSE, envir = .spadesEnv) < 10)) {
-          if (spreadStateExists) {
-            # tooSmall <- tabulate(spreads[c(spreadState[!keepers]$indices, spreadsIndices)],
-            #                      length(maxSize)) < maxSize
-            tooSmall <- tabulate(spreads[,"id"], length(maxSize)) < maxSize
-            inactive <- tabulate(spreads[spreads[,"active"]==1,"id"], length(maxSize)) == 0
+      if(any(size > maxSize) | (size < maxSize) ) {
+        if (exactSizes) {
+          if (all(numRetries < 10)) {
+            if (spreadStateExists) {
+              # tooSmall <- tabulate(spreads[c(spreadState[!keepers]$indices, spreadsIndices)],
+              #                      length(maxSize)) < maxSize
+              tooSmall <- tabulate(spreads[,"id"], length(maxSize)) < maxSize
+              inactive <- tabulate(spreads[spreads[,"active"]==1,"id"], length(maxSize)) == 0
 
-          } else {
-            tooSmall <- tabulate(spreads, length(maxSize)) < maxSize
-            inactive <- tabulate(spreads[events], length(maxSize)) == 0
-          }
-
-          needPersist <- tooSmall & inactive # these are ones that are stuck ... i.e., too small, and inactive
-          needPersistJump <- TRUE
-          if (any(needPersist)) {
-            assign("numRetries", envir = .spadesEnv,
-               get("numRetries", inherits = FALSE, envir = .spadesEnv) + needPersist)
-
-            if(spreadStateExists) {
-
-              whSmallInactive <- which(tooSmall & inactive)
-              spreadsSmallInactive <- spreads[spreads[, "id"] %in% whSmallInactive, , drop = FALSE]
-              if(needPersistJump) {
-                message("Jumping to new active location, up to 1000 m away")
-                mmm <- SpaDES::rings(landscape, loci = spreadsSmallInactive[, "indices"],
-                                     maxRadius = 1000, minRadius = 1,
-                                     returnIndices = TRUE)
-                wh <- mmm[,list(whKeepLoci=resample(.I, 1)),by=id]$whKeepLoci
-              } else {
-                for(whSI in whSmallInactive) {
-                  wh <- which(spreads[,"id"] == whSI)
-                  wh <- tail(wh,2) # pick last two ones from all inactive cells
-                  keepLoci <- spreads[wh,"indices"]
-                  events <- c(keepLoci, events)
-                  spreads[wh,"active"] <- 1
-                }
-              }
             } else {
-              keepLoci <- spreads[loci] %fin% which(tooSmall & inactive)
-              events <- c(loci[keepLoci], events)
+              tabulated <- tabulate(spreads, length(maxSize))
+              tooSmall <- tabulated < maxSize
+              inactive <- tabulate(spreads[potentials[,1L]], length(maxSize)) == 0
             }
 
+            needPersist <- tooSmall & inactive # these are ones that are stuck ... i.e., too small, and inactive
+            needPersistJump <- TRUE
+            if (any(needPersist)) {
+              numRetries <- numRetries + needPersist
+
+              whSmallInactive <- which(tooSmall & inactive)
+
+              retryLoci <- loci[whSmallInactive]
+            }
           }
         }
       }
@@ -1071,6 +1077,8 @@ setMethod(
         }
       }
 
+
+
       if (plot.it) {
         if (n == 2 & !spreadStateExists) clearPlot()
         if (allowOverlap | returnDistances) {
@@ -1086,8 +1094,9 @@ setMethod(
           Plot(plotCur)
         }
       }
-      loci <- c(loci, events) # new loci list for next while loop, concat of persistent and new events
-    } # end of while loop
+      loci <- c(loci, retryLoci, events) # new loci list for next while loop, concat of persistent and new events
+    } ### END OF WHILE LOOP
+
 
     # Convert the data back to raster
     if (!allowOverlap & !returnDistances & !spreadStateExists) {
@@ -1164,9 +1173,8 @@ setMethod(
         allCells <- dtToJoin[allCells]
       }
       allCells[]
-      if(exists("numRetries", envir = .spadesEnv)) {
-        if(sum(allCells$active)==0) rm("numRetries", envir = .spadesEnv)
-      }
+      attr(allCells, "numRetries") <- numRetries
+      attr(allCells, "retryLoci") <- retryLoci
       return(allCells)
     }
 
